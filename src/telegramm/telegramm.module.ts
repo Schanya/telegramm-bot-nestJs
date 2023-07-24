@@ -1,13 +1,27 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { TelegrafModule } from 'nestjs-telegraf';
-import { sessionMiddleware } from './middleware/session.middleware';
-import { TelegrammService } from './telegramm.service';
+import { TelegrammService } from './controllers/telegramm.controller';
 import { AppModule } from 'src/app.module';
+import { CatService } from './services/cat.service';
+import { DogService } from './services/dog.service';
+import { HelpService } from './services/help.service';
+import { WeatherService } from './services/weather.service';
 
 @Module({
   imports: [forwardRef(() => AppModule)],
   controllers: [],
-  providers: [TelegrammService],
-  exports: [TelegrammService],
+  providers: [
+    TelegrammService,
+    CatService,
+    DogService,
+    HelpService,
+    WeatherService,
+  ],
+  exports: [
+    TelegrammService,
+    CatService,
+    DogService,
+    HelpService,
+    WeatherService,
+  ],
 })
 export class TelegrammModule {}

@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { sessionMiddleware } from './telegramm/middleware/session.middleware';
 import { TelegrammModule } from './telegramm/telegramm.module';
 
@@ -14,8 +12,8 @@ import { TelegrammModule } from './telegramm/telegramm.module';
     }),
     TelegrammModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
-  exports: [AppService],
+  controllers: [],
+  providers: [],
+  exports: [],
 })
 export class AppModule {}
