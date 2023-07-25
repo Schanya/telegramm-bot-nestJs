@@ -24,12 +24,16 @@
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/sequelize": "^10.0.0",
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
     "nestjs-telegraf": "^2.6.3",
+    "pg": "^8.11.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "sequelize": "^6.32.1",
+    "sequelize-typescript": "^2.1.5",
     "telegraf": "^4.12.2"
   },
   "devDependencies": {
