@@ -10,7 +10,7 @@ const dbconfig: SequelizeModuleOptions = {
   database: process.env.POSTGRES_DB_NAME,
   models: [],
   autoLoadModels: true,
-  synchronize: false,
+  synchronize: true,
 };
 
 export { dbconfig };
