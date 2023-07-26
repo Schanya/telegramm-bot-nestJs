@@ -1,4 +1,4 @@
-import { Command, Hears, InjectBot, Start, Update } from 'nestjs-telegraf';
+import { Command, Ctx, Hears, InjectBot, Start, Update } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
 import { actionButtons } from '../buttons/actions.button';
@@ -7,6 +7,7 @@ import { CatService } from '../services/cat.service';
 import { DogService } from '../services/dog.service';
 import { HelpService } from '../services/help.service';
 import { WeatherService } from '../services/weather.service';
+import { SceneContext } from 'telegraf/typings/scenes';
 
 @Update()
 export class TelegrammService {
@@ -26,25 +27,25 @@ export class TelegrammService {
 
   @Hears('🆘 Help')
   @Command('help')
-  async helpHears(ctx: Context) {
+  async helpHears(@Ctx() ctx: Context) {
     await this.helpService.getHelpList(ctx);
   }
 
   @Hears('🐱 Cat')
   @Command('cat')
-  async catHears(ctx: Context) {
+  async catHears(@Ctx() ctx: Context) {
     await this.catService.getCatImage(ctx);
   }
 
   @Hears('🐶 Dog')
   @Command('dog')
-  async dogHears(ctx: Context) {
+  async dogHears(@Ctx() ctx: Context) {
     await this.dogService.getDogImage(ctx);
   }
 
   @Hears('🌤 Weather')
   @Command('weather')
-  async weatherHears(ctx: Context) {
-    await this.weatherService.getWeather(ctx);
+  async weatherHears(@Ctx() ctx: SceneContext) {
+    ctx.scene.enter('weather');
   }
 }

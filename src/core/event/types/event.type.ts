@@ -1,0 +1,1 @@
+type EventType = 'weather' | 'attractions';

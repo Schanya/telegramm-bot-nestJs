@@ -5,12 +5,21 @@ import { CatService } from './services/cat.service';
 import { DogService } from './services/dog.service';
 import { HelpService } from './services/help.service';
 import { WeatherService } from './services/weather.service';
-import { CoreModule } from 'src/core/core.module';
 import { UserModule } from 'src/core/user/user.module';
 import { CityModule } from 'src/core/city/city.module';
+import { EventModule } from '../event/event.module';
+import { NotificationService } from './services/schedule.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TimeHandler } from './buttons/time.button';
 
 @Module({
-  imports: [forwardRef(() => AppModule), UserModule, CityModule],
+  imports: [
+    forwardRef(() => AppModule),
+    UserModule,
+    CityModule,
+    EventModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [],
   providers: [
     TelegrammService,
@@ -18,6 +27,8 @@ import { CityModule } from 'src/core/city/city.module';
     DogService,
     HelpService,
     WeatherService,
+    NotificationService,
+    TimeHandler,
   ],
   exports: [
     TelegrammService,
@@ -25,6 +36,8 @@ import { CityModule } from 'src/core/city/city.module';
     DogService,
     HelpService,
     WeatherService,
+    NotificationService,
+    TimeHandler,
   ],
 })
 export class TelegrammModule {}
