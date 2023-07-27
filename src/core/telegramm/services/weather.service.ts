@@ -12,7 +12,6 @@ import { Telegraf } from 'telegraf';
 import axios from 'axios';
 import { weatherButtons } from '../buttons/weather.button';
 import { WeatherDto } from './dto/weather.dto';
-import { SceneContext } from 'telegraf/typings/scenes';
 
 @Scene('weather')
 export class WeatherService {
@@ -25,22 +24,20 @@ export class WeatherService {
   }
 
   @Action('/city')
-  async cityAction(@Ctx() ctx: SceneContext) {
+  async cityAction(@Ctx() ctx: Context) {
     ctx.editMessageText(
       'Введите название города, погоду которого хотите знать',
     );
-    ctx.scene.session.state = { type: 'city' };
+    ctx.session['type'] = 'city';
   }
 
   @Action('/subscription')
-  async subscriptionAction(@Ctx() ctx: SceneContext) {
+  async subscriptionAction(@Ctx() ctx: Context) {
     await ctx.editMessageText(
       'Введите название города, погоду которого хотите знать',
     );
 
-    ctx.scene.session.state = {
-      type: 'weatherCity',
-    };
+    ctx.session['type'] = 'weatherCity';
   }
 
   async sendWeather(
@@ -55,46 +52,53 @@ export class WeatherService {
   }
 
   async getWeather(city: string) {
-    const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&lang=ru&appid=3c3b996343a336616ba97438391b47b4`,
-    );
+    try {
+      const { data } = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&lang=ru&appid=3c3b996343a336616ba97438391b47b4`,
+      );
 
-    let weatherDescription = data['weather'][0].description;
-    let temperature = Math.floor(+data['main'].temp - 273.15);
+      let weatherDescription = data['weather'][0].description;
+      let temperature = Math.floor(+data['main'].temp - 273.15);
 
-    let result: WeatherDto = {
-      description: weatherDescription,
-      temperature,
-    };
+      let result: WeatherDto = {
+        description: weatherDescription,
+        temperature,
+      };
 
-    return result;
+      return result;
+    } catch (error) {
+      return error.message;
+    }
   }
 
   @On('text')
-  async getCity(
-    @Ctx() ctx: SceneContext,
-    @Ctx() context: Context,
-    @Message() message: string,
-  ) {
+  async getCity(@Ctx() ctx: Context, @Message() message: string) {
     const messageText = message['text'];
-    switch (ctx.scene.session.state['type']) {
+
+    switch (ctx.session['type']) {
       case 'city': {
-        let { description, temperature } = await this.getWeather(messageText);
+        let { description, temperature } = await this.getWeather(
+          messageText,
+        ).catch((e) => ctx.sendMessage(`${e.message}`));
+
         let chatID = message['chat'].id;
 
-        await this.sendWeather(chatID, description, temperature);
+        await ctx.sendMessage(
+          `Погода: ${description}\nТемпература: ${temperature}°C`,
+          chatID,
+        );
 
-        ctx.scene.reenter();
+        await ctx.scene.reenter();
 
         break;
       }
       case 'weatherCity': {
-        context.session['data'] = {
+        ctx.session['data'] = {
           sessionID: ctx.scene.current.id,
           city: messageText,
         };
-        ctx.scene.enter('timeScene');
 
+        ctx.scene.enter('timeScene');
         break;
       }
     }

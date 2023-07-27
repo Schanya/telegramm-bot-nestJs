@@ -1,6 +1,5 @@
-import { Ctx, InjectBot, On, Scene, SceneEnter } from 'nestjs-telegraf';
+import { Ctx, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Context } from '../interfaces/context.interface';
-import { SceneContext } from 'telegraf/typings/scenes';
 import { CreateCityDto } from 'src/core/city/dto/create-city.dto';
 import { CreateUserDto } from 'src/core/user/dto/create-user.dto';
 import { CreateEventDto } from 'src/core/event/dto/create-event.dto';
@@ -15,7 +14,8 @@ export class TimeService {
   constructor(private readonly userService: UserService) {}
 
   @SceneEnter()
-  async startTimeScene(@Ctx() ctx: Context, @Ctx() context: Context) {
+  async startTimeScene(@Ctx() ctx: Context) {
+    console.log(ctx.session['data']);
     const initialTime = { hours: 0, minutes: 0 };
 
     await ctx.reply('Введите время, в которое хотите получать обновления');
@@ -26,19 +26,18 @@ export class TimeService {
   }
 
   @On('callback_query')
-  async timeButtonsHandler(@Ctx() ctx: SceneContext, @Ctx() context: Context) {
+  async timeButtonsHandler(@Ctx() ctx: Context) {
     const action = ctx.callbackQuery['data'];
     const message = ctx.callbackQuery.message['text'];
     const currentTime = this.parseTime(message);
 
-    await this.handleTimeAction(action, currentTime, ctx, context);
+    await this.handleTimeAction(action, currentTime, ctx);
   }
 
   async handleTimeAction(
     action: TimeActionType,
     currentTime: TimeDto,
-    @Ctx() ctx: SceneContext,
-    @Ctx() context: Context,
+    @Ctx() ctx: Context,
   ) {
     switch (action) {
       case 'increaseHours':
@@ -59,7 +58,7 @@ export class TimeService {
           currentTime.hours = (currentTime.hours - 1 + 24) % 24;
         }
       case 'done':
-        await this.handleDoneAction(ctx, context, currentTime);
+        await this.handleDoneAction(ctx, currentTime);
         break;
       default:
         return;
@@ -68,21 +67,17 @@ export class TimeService {
     this.updateMessage(ctx, currentTime);
   }
 
-  async handleDoneAction(
-    @Ctx() ctx: SceneContext,
-    @Ctx() context: Context,
-    currentTime: TimeDto,
-  ) {
-    context.reply(`Вы выбрали время: ${this.formatTime(currentTime)}`);
+  async handleDoneAction(@Ctx() ctx: Context, currentTime: TimeDto) {
+    ctx.reply(`Вы выбрали время: ${this.formatTime(currentTime)}`);
 
-    const cityInfo: CreateCityDto = { name: context.session['data'].city };
+    const cityInfo: CreateCityDto = { name: ctx.session['data'].city };
     const userInfo: CreateUserDto = {
-      name: context.callbackQuery.from.first_name,
-      telegrammID: context.callbackQuery.from.id,
+      name: ctx.callbackQuery.from.first_name,
+      telegrammID: ctx.callbackQuery.from.id,
     };
     const eventInfo: CreateEventDto = {
       time: new Date(0, 0, 0, currentTime.hours, currentTime.minutes),
-      type: 'weather',
+      type: ctx.session['data'].sessionID,
     };
 
     const userData: UserDataDto = { cityInfo, userInfo, eventInfo };
@@ -90,15 +85,15 @@ export class TimeService {
     await this.userService
       .saveUserWithData(userData)
       .then(() => {
-        context.reply(
+        ctx.reply(
           'Данные успешно сохранены, теперь вы будете получать уведомления',
         );
         ctx.scene.leave();
       })
-      .catch((e) => context.reply(`${e.message}`));
+      .catch((e) => ctx.reply(`${e.message}`));
   }
 
-  updateMessage(@Ctx() ctx: SceneContext, currentTime: TimeDto) {
+  updateMessage(@Ctx() ctx: Context, currentTime: TimeDto) {
     ctx
       .editMessageText(
         `Текущее время: ${this.formatTime(currentTime)}`,
