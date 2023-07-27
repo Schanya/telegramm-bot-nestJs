@@ -11,20 +11,12 @@ import { Context } from '../interfaces/context.interface';
 import { Telegraf } from 'telegraf';
 import axios from 'axios';
 import { weatherButtons } from '../buttons/weather.button';
-import { CityService } from 'src/core/city/city.service';
-import { UserService } from 'src/core/user/user.service';
 import { WeatherDto } from './dto/weather.dto';
-import { TimeHandler } from '../buttons/time.button';
 import { SceneContext } from 'telegraf/typings/scenes';
 
 @Scene('weather')
 export class WeatherService {
-  constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
-    private readonly cityService: CityService,
-    private readonly userSrvice: UserService,
-    private readonly timeHandler: TimeHandler,
-  ) {}
+  constructor(@InjectBot() private readonly bot: Telegraf<Context>) {}
 
   @SceneEnter()
   async startWeatherScene(@Ctx() ctx: Context) {

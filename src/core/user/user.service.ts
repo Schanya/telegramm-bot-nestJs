@@ -4,10 +4,17 @@ import { User } from './user.model';
 import { UserOptions } from './dto/find-user.options';
 import { ReadAllUserDto } from './dto/read-all-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserDataDto } from './dto/user-data.dto';
+import { CityService } from '../city/city.service';
+import { EventService } from '../event/event.service';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User) private userRepository: typeof User) {}
+  constructor(
+    @InjectModel(User) private userRepository: typeof User,
+    private readonly cityService: CityService,
+    private readonly eventService: EventService,
+  ) {}
 
   public async findOne(options: UserOptions): Promise<User> {
     const suitableUser = await this.findBy({ ...options });
@@ -56,5 +63,35 @@ export class UserService {
 
     if (!numberDeletedRows)
       throw new BadRequestException('There is no suitable user');
+  }
+
+  public async saveUserWithData(userData: UserDataDto) {
+    const { userInfo, cityInfo, eventInfo } = userData;
+
+    let existingCity = await this.cityService.findBy({
+      name: cityInfo.name,
+    });
+    if (!existingCity) {
+      existingCity = await this.cityService.create({ name: cityInfo.name });
+    }
+
+    let existingUser = await this.findBy({
+      telegrammID: userInfo.telegrammID,
+    });
+
+    if (!existingUser) {
+      existingUser = await this.create({
+        name: userInfo.name,
+        telegrammID: userInfo.telegrammID,
+      });
+    }
+
+    let event = await this.eventService.create({
+      time: eventInfo.time,
+      type: eventInfo.type,
+    });
+
+    await existingCity.$add('user', existingUser);
+    await event.$add('user', existingUser);
   }
 }

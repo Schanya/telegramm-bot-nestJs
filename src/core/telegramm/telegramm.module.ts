@@ -10,7 +10,7 @@ import { CityModule } from 'src/core/city/city.module';
 import { EventModule } from '../event/event.module';
 import { NotificationService } from './services/schedule.service';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TimeHandler } from './buttons/time.button';
+import { TimeService } from './services/time.service';
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { TimeHandler } from './buttons/time.button';
     HelpService,
     WeatherService,
     NotificationService,
-    TimeHandler,
+    TimeService,
   ],
   exports: [
     TelegrammService,
@@ -37,7 +37,7 @@ import { TimeHandler } from './buttons/time.button';
     HelpService,
     WeatherService,
     NotificationService,
-    TimeHandler,
+    TimeService,
   ],
 })
 export class TelegrammModule {}
