@@ -1,20 +1,22 @@
 import { Ctx, On, Scene, SceneEnter } from 'nestjs-telegraf';
-import { Context } from '../interfaces/context.interface';
 import { CreateCityDto } from 'src/core/city/dto/create-city.dto';
-import { CreateUserDto } from 'src/core/user/dto/create-user.dto';
 import { CreateEventDto } from 'src/core/event/dto/create-event.dto';
-import { UserService } from 'src/core/user/user.service';
+import { CreateUserDto } from 'src/core/user/dto/create-user.dto';
 import { UserDataDto } from 'src/core/user/dto/user-data.dto';
+import { UserService } from 'src/core/user/user.service';
+import { callbackQuery } from 'telegraf/filters';
+import { Message } from 'telegraf/typings/core/types/typegram';
 import { timeButtons } from '../buttons/time.button';
-import { TimeActionType } from './types/timeAction.type';
+import { Context } from '../interfaces/context.interface';
 import { TimeDto } from './dto/time.dto';
 import { SceneEnum } from './enums/scene.enum';
+import { TimeActionType } from './types/timeAction.type';
 import {
   HOURS,
-  MINUTES,
   HOUR_STEP,
-  MINUTE_STEP,
+  MINUTES,
   MINUTE_LIMIT,
+  MINUTE_STEP,
 } from './сonstants/time.constants';
 
 @Scene(SceneEnum.timeScene)
@@ -23,7 +25,8 @@ export class TimeService {
 
   @SceneEnter()
   async startTimeScene(@Ctx() ctx: Context) {
-    console.log(ctx.session['data']);
+    console.log(ctx.session);
+
     const currentDate = new Date();
     const initialTime = {
       hours: currentDate.getHours(),
@@ -39,11 +42,13 @@ export class TimeService {
 
   @On('callback_query')
   async timeButtonsHandler(@Ctx() ctx: Context) {
-    const action = ctx.callbackQuery['data'];
-    const message = ctx.callbackQuery.message['text'];
-    const currentTime = this.parseTime(message);
+    if (ctx.has(callbackQuery('data'))) {
+      const action = ctx.callbackQuery.data as TimeActionType;
+      const message = ctx.callbackQuery.message as Message.TextMessage;
+      const currentTime = this.parseTime(message.text);
 
-    await this.handleTimeAction(action, currentTime, ctx);
+      await this.handleTimeAction(action, currentTime, ctx);
+    }
   }
 
   async handleTimeAction(
@@ -84,14 +89,14 @@ export class TimeService {
   async handleDoneAction(@Ctx() ctx: Context, currentTime: TimeDto) {
     ctx.reply(`Вы выбрали время: ${this.formatTime(currentTime)}`);
 
-    const cityInfo: CreateCityDto = { name: ctx.session['data'].city };
+    const cityInfo: CreateCityDto = { name: ctx.session.__scenes.state.city };
     const userInfo: CreateUserDto = {
       name: ctx.callbackQuery.from.first_name,
       telegrammID: ctx.callbackQuery.from.id,
     };
     const eventInfo: CreateEventDto = {
       time: new Date(0, 0, 0, currentTime.hours, currentTime.minutes),
-      type: ctx.session['data'].sessionID,
+      type: ctx.session.__scenes.state.evenType,
     };
 
     const userData: UserDataDto = { cityInfo, userInfo, eventInfo };

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   Action,
   Ctx,
@@ -7,12 +8,14 @@ import {
   Scene,
   SceneEnter,
 } from 'nestjs-telegraf';
-import { Context } from '../interfaces/context.interface';
 import { Telegraf } from 'telegraf';
-import axios from 'axios';
 import { weatherButtons } from '../buttons/weather.button';
-import { WeatherDto } from './dto/weather.dto';
+import { Context } from '../interfaces/context.interface';
+import { WeatherDto, WeatherParamsDto } from './dto/weather.dto';
 import { SceneEnum } from './enums/scene.enum';
+import { axiosDownload } from './help/httpRequest';
+import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
+import { BadRequestException } from '@nestjs/common';
 
 @Scene(SceneEnum.weatherScene)
 export class WeatherService {
@@ -20,7 +23,6 @@ export class WeatherService {
 
   @SceneEnter()
   async startWeatherScene(@Ctx() ctx: Context) {
-    console.log(ctx.session);
     await ctx.reply('Выберите действие', weatherButtons());
   }
 
@@ -29,7 +31,7 @@ export class WeatherService {
     ctx.editMessageText(
       'Введите название города, погоду которого хотите знать',
     );
-    ctx.session['type'] = 'city';
+    ctx.session.__scenes.type = 'weather';
   }
 
   @Action('/subscription')
@@ -38,7 +40,7 @@ export class WeatherService {
       'Введите название города, погоду которого хотите знать',
     );
 
-    ctx.session['type'] = 'weatherCity';
+    ctx.session.__scenes.type = 'subscription';
   }
 
   async sendWeather(
@@ -54,54 +56,57 @@ export class WeatherService {
 
   async getWeather(city: string) {
     try {
-      const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&lang=ru&appid=3c3b996343a336616ba97438391b47b4`,
-      );
+      const params: WeatherParamsDto = {
+        q: city,
+        lang: 'ru',
+        appid: process.env.WEATHER_KEY,
+        units: 'metric',
+      };
+      const { data } = await axiosDownload(process.env.WEATHER_URL, params);
 
-      let weatherDescription = data['weather'][0].description;
-      let temperature = Math.floor(+data['main'].temp - 273.15);
+      const weatherDescription = data['weather'][0].description;
+      const temperature = +data['main'].temp;
 
-      let result: WeatherDto = {
+      const result: WeatherDto = {
         description: weatherDescription,
         temperature,
       };
 
       return result;
     } catch (error) {
-      return error.message;
+      throw new BadRequestException();
     }
   }
 
   @On('text')
-  async getCity(@Ctx() ctx: Context, @Message() message: string) {
-    const messageText = message['text'];
+  async getCity(
+    @Ctx() ctx: Context,
+    @Message() message: MessageType.TextMessage,
+  ) {
+    try {
+      const messageText = message.text;
+      let { description, temperature } = await this.getWeather(messageText);
 
-    switch (ctx.session['type']) {
-      case 'city': {
-        let { description, temperature } = await this.getWeather(
-          messageText,
-        ).catch((e) => ctx.sendMessage(`${e.message}`));
+      switch (ctx.session.__scenes.type) {
+        case 'weather': {
+          await ctx.sendMessage(
+            `Погода: ${description}\nТемпература: ${temperature}°C`,
+          );
 
-        let chatID = message['chat'].id;
+          await ctx.scene.leave();
 
-        await ctx.sendMessage(
-          `Погода: ${description}\nТемпература: ${temperature}°C`,
-          chatID,
-        );
+          break;
+        }
+        case 'subscription': {
+          ctx.state.city = messageText;
+          ctx.state.evenType = 'weather';
+          ctx.scene.enter(SceneEnum.timeScene, ctx.state);
 
-        await ctx.scene.reenter();
-
-        break;
+          break;
+        }
       }
-      case 'weatherCity': {
-        ctx.session['data'] = {
-          sessionID: ctx.scene.current.id,
-          city: messageText,
-        };
-
-        ctx.scene.enter(SceneEnum.timeScene);
-        break;
-      }
+    } catch (e) {
+      ctx.sendMessage('В названии города что-то не так, повторите ввод');
     }
   }
 }
