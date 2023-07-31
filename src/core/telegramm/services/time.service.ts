@@ -9,6 +9,13 @@ import { timeButtons } from '../buttons/time.button';
 import { TimeActionType } from './types/timeAction.type';
 import { TimeDto } from './dto/time.dto';
 import { SceneEnum } from './enums/scene.enum';
+import {
+  HOURS,
+  MINUTES,
+  HOUR_STEP,
+  MINUTE_STEP,
+  MINUTE_LIMIT,
+} from './сonstants/time.constants';
 
 @Scene(SceneEnum.timeScene)
 export class TimeService {
@@ -17,7 +24,11 @@ export class TimeService {
   @SceneEnter()
   async startTimeScene(@Ctx() ctx: Context) {
     console.log(ctx.session['data']);
-    const initialTime = { hours: 0, minutes: 0 };
+    const currentDate = new Date();
+    const initialTime = {
+      hours: currentDate.getHours(),
+      minutes: currentDate.getMinutes(),
+    };
 
     await ctx.reply('Введите время, в которое хотите получать обновления');
     await ctx.reply(
@@ -42,22 +53,24 @@ export class TimeService {
   ) {
     switch (action) {
       case 'increaseHours':
-        currentTime.hours = (currentTime.hours + 1) % 24;
+        currentTime.hours = (currentTime.hours + HOUR_STEP) % HOURS;
         break;
       case 'decreaseHours':
-        currentTime.hours = (currentTime.hours - 1 + 24) % 24;
+        currentTime.hours = (currentTime.hours - HOUR_STEP + HOURS) % HOURS;
         break;
       case 'increaseMinutes':
-        currentTime.minutes = (currentTime.minutes + 15) % 60;
-        if (currentTime.minutes === 0) {
-          currentTime.hours = (currentTime.hours + 1) % 24;
+        currentTime.minutes = (currentTime.minutes + MINUTE_STEP) % MINUTES;
+        if (!currentTime.minutes) {
+          currentTime.hours = (currentTime.hours + HOUR_STEP) % HOURS;
         }
         break;
       case 'decreaseMinutes':
-        currentTime.minutes = (currentTime.minutes - 15 + 60) % 60;
-        if (currentTime.minutes === 45) {
-          currentTime.hours = (currentTime.hours - 1 + 24) % 24;
+        currentTime.minutes =
+          (currentTime.minutes - MINUTE_STEP + MINUTES) % MINUTES;
+        if (currentTime.minutes === MINUTE_LIMIT) {
+          currentTime.hours = (currentTime.hours - HOUR_STEP + HOURS) % HOURS;
         }
+        break;
       case 'done':
         await this.handleDoneAction(ctx, currentTime);
         break;
