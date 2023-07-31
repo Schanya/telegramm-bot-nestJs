@@ -64,7 +64,7 @@ export class WeatherService {
       const { data } = await axiosDownload(process.env.WEATHER_URL, params);
 
       const weatherDescription = data['weather'][0].description;
-      const temperature = +data['main'].temp;
+      const temperature = Number(data['main'].temp);
 
       const result: WeatherDto = {
         description: weatherDescription,

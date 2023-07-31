@@ -59,7 +59,7 @@ export class NotificationService implements OnModuleInit {
       );
 
       let description = data['weather'][0].description;
-      let temperature = Math.floor(+data['main'].temp - 273.15);
+      let temperature = Math.floor(Number(data['main'].temp - 273.15));
 
       await this.bot.telegram.sendMessage(
         user.id,
