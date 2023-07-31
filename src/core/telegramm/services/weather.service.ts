@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { BadRequestException } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -9,13 +9,12 @@ import {
   SceneEnter,
 } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
+import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 import { weatherButtons } from '../buttons/weather.button';
 import { Context } from '../interfaces/context.interface';
 import { WeatherDto, WeatherParamsDto } from './dto/weather.dto';
 import { SceneEnum } from './enums/scene.enum';
 import { axiosDownload } from './help/httpRequest';
-import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { BadRequestException } from '@nestjs/common';
 
 @Scene(SceneEnum.weatherScene)
 export class WeatherService {
