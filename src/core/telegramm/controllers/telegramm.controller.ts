@@ -1,23 +1,12 @@
-import { Command, Ctx, Hears, InjectBot, Start, Update } from 'nestjs-telegraf';
-import { Telegraf } from 'telegraf';
+import { Command, Ctx, Hears, Start, Update } from 'nestjs-telegraf';
 
 import { actionButtons } from '../buttons/actions.button';
 import { Context } from '../interfaces/context.interface';
-import { CatService } from '../services/cat.service';
-import { DogService } from '../services/dog.service';
-import { HelpService } from '../services/help.service';
-import { WeatherService } from '../services/weather.service';
-import { SceneContext } from 'telegraf/typings/scenes';
+import { SceneEnum } from '../services/enums/scene.enum';
 
 @Update()
 export class TelegrammService {
-  constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
-    private readonly catService: CatService,
-    private readonly dogService: DogService,
-    private readonly helpService: HelpService,
-    private readonly weatherService: WeatherService,
-  ) {}
+  constructor() {}
 
   @Start()
   async startCommand(ctx: Context) {
@@ -28,24 +17,24 @@ export class TelegrammService {
   @Hears('🆘 Help')
   @Command('help')
   async helpHears(@Ctx() ctx: Context) {
-    await this.helpService.getHelpList(ctx);
+    ctx.scene.enter(SceneEnum.helpScene);
   }
 
   @Hears('🐱 Cat')
   @Command('cat')
   async catHears(@Ctx() ctx: Context) {
-    await this.catService.getCatImage(ctx);
+    ctx.scene.enter(SceneEnum.catScene);
   }
 
   @Hears('🐶 Dog')
   @Command('dog')
   async dogHears(@Ctx() ctx: Context) {
-    await this.dogService.getDogImage(ctx);
+    ctx.scene.enter(SceneEnum.dogScene);
   }
 
   @Hears('🌤 Weather')
   @Command('weather')
-  async weatherHears(@Ctx() ctx: SceneContext) {
-    ctx.scene.enter('weather');
+  async weatherHears(@Ctx() ctx: Context) {
+    ctx.scene.enter(SceneEnum.weatherScene);
   }
 }

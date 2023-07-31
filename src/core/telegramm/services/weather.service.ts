@@ -12,8 +12,9 @@ import { Telegraf } from 'telegraf';
 import axios from 'axios';
 import { weatherButtons } from '../buttons/weather.button';
 import { WeatherDto } from './dto/weather.dto';
+import { SceneEnum } from './enums/scene.enum';
 
-@Scene('weather')
+@Scene(SceneEnum.weatherScene)
 export class WeatherService {
   constructor(@InjectBot() private readonly bot: Telegraf<Context>) {}
 
@@ -98,7 +99,7 @@ export class WeatherService {
           city: messageText,
         };
 
-        ctx.scene.enter('timeScene');
+        ctx.scene.enter(SceneEnum.timeScene);
         break;
       }
     }

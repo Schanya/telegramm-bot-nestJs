@@ -8,8 +8,9 @@ import { UserDataDto } from 'src/core/user/dto/user-data.dto';
 import { timeButtons } from '../buttons/time.button';
 import { TimeActionType } from './types/timeAction.type';
 import { TimeDto } from './dto/time.dto';
+import { SceneEnum } from './enums/scene.enum';
 
-@Scene('timeScene')
+@Scene(SceneEnum.timeScene)
 export class TimeService {
   constructor(private readonly userService: UserService) {}
 
