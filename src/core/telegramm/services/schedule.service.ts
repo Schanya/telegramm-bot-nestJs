@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob, CronTime } from 'cron';
 import { EventService } from 'src/core/event/event.service';
 import { WeatherService } from './weather.service';
 import { Event } from 'src/core/event/event.model';
@@ -35,6 +35,7 @@ export class NotificationService implements OnModuleInit {
       : currentTime.hours < notificationTime.hours;
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_6AM)
   async onModuleInit() {
     let events = await this.eventService.findAll({});
 

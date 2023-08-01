@@ -18,10 +18,14 @@ import {
   MINUTE_LIMIT,
   MINUTE_STEP,
 } from './сonstants/time.constants';
+import { NotificationService } from './schedule.service';
 
 @Scene(SceneEnum.timeScene)
 export class TimeService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   @SceneEnter()
   async startTimeScene(@Ctx() ctx: Context) {
@@ -101,15 +105,8 @@ export class TimeService {
 
     const userData: UserDataDto = { cityInfo, userInfo, eventInfo };
 
-    await this.userService
-      .saveUserWithData(userData)
-      .then(() => {
-        ctx.reply(
-          'Данные успешно сохранены, теперь вы будете получать уведомления',
-        );
-        ctx.scene.leave();
-      })
-      .catch((e) => ctx.reply(`${e.message}`));
+    await this.userService.saveUserWithData(userData);
+    // await this.notificationService.onModuleInit();
   }
 
   updateMessage(@Ctx() ctx: Context, currentTime: TimeDto) {

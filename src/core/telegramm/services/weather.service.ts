@@ -63,10 +63,12 @@ export class WeatherService {
       };
       const { data } = await axiosDownload(process.env.WEATHER_URL, params);
 
+      const cityName = data.name;
       const weatherDescription = data['weather'][0].description;
       const temperature = Number(data['main'].temp);
 
       const result: WeatherDto = {
+        cityName,
         description: weatherDescription,
         temperature,
       };
@@ -84,7 +86,9 @@ export class WeatherService {
   ) {
     try {
       const messageText = message.text;
-      let { description, temperature } = await this.getWeather(messageText);
+      let { cityName, description, temperature } = await this.getWeather(
+        messageText,
+      );
 
       switch (ctx.session.__scenes.type) {
         case 'weather': {
@@ -97,7 +101,7 @@ export class WeatherService {
           break;
         }
         case 'subscription': {
-          ctx.state.city = messageText;
+          ctx.state.city = cityName;
           ctx.state.evenType = 'weather';
           ctx.scene.enter(SceneEnum.timeScene, ctx.state);
 
