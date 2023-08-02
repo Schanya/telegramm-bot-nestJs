@@ -35,6 +35,9 @@ export class TelegrammService {
   @Hears('🌤 Weather')
   @Command('weather')
   async weatherHears(@Ctx() ctx: Context) {
+    await ctx.sendMessage('Отлично', {
+      reply_markup: { remove_keyboard: true },
+    });
     ctx.scene.enter(SceneEnum.weatherScene);
   }
 }

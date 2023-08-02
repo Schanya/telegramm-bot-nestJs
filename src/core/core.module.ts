@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from './user/user.module';
-import { CityModule } from './city/city.module';
-import { TelegrammModule } from './telegramm/telegramm.module';
 import { TelegrafModule } from 'nestjs-telegraf';
-import { sessionMiddleware } from './telegramm/middleware/session.middleware';
+import { CityModule } from './city/city.module';
 import { EventModule } from './event/event.module';
+import { sessionMiddleware } from './telegramm/middleware/session.middleware';
+import { TelegrammModule } from './telegramm/telegramm.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

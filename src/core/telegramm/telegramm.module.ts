@@ -13,13 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TimeService } from './services/time.service';
 
 @Module({
-  imports: [
-    forwardRef(() => AppModule),
-    UserModule,
-    CityModule,
-    EventModule,
-    ScheduleModule.forRoot(),
-  ],
+  imports: [UserModule, CityModule, EventModule, ScheduleModule.forRoot()],
   controllers: [],
   providers: [
     TelegrammService,
