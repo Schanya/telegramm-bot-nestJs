@@ -4,11 +4,20 @@ import { sightButtons } from '../buttons/sight/start.button';
 import { Context } from '../interfaces/context.interface';
 import { SceneEnum } from './enums/scene.enum';
 import { axiosDownload } from './help/httpRequest';
-import { SightRequestParamsDto } from './dto/sight.dto';
+import {
+  AddressDto,
+  PointDto,
+  SightInfoDto,
+  SightRequestParamsDto,
+  SigthXidsDto,
+} from './dto/sight.dto';
 import { sightTypeButtons } from '../buttons/sight/sight-type.button';
 import { SightType } from './types/sight.type';
 import { SIGHT_TYPE } from '../сonstants/sight.constants';
 import { callbackQuery } from 'telegraf/filters';
+import { SightPhrases } from './enums/phrases/sight.phrases';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { actionButtons } from '../buttons/actions.button';
 
 @Scene(SceneEnum.sightScene)
 export class SightService {
@@ -16,18 +25,18 @@ export class SightService {
 
   @SceneEnter()
   async startSightScene(@Ctx() ctx: Context) {
-    await ctx.sendMessage(
-      'Какие достопримечательности хотите найти?',
-      sightTypeButtons(),
-    );
+    await ctx.sendMessage(SightPhrases.start, sightTypeButtons());
   }
 
   @Action(Object.keys(SIGHT_TYPE))
   async whereSight(@Ctx() ctx: Context) {
     if (ctx.has(callbackQuery('data'))) {
+      await ctx.answerCbQuery();
+
       ctx.session.__scenes.state.sightType = ctx.callbackQuery
         .data as SightType;
-      await ctx.sendMessage('Где искать?', sightButtons());
+
+      await ctx.sendMessage(SightPhrases.placeQuestion, sightButtons());
     }
   }
 
@@ -36,35 +45,66 @@ export class SightService {
     @Ctx() ctx: Context,
     @Message() message: MessageType.LocationMessage,
   ) {
-    const kinds = ctx.session.__scenes.state.sightType;
-    const { latitude, longitude } = message.location;
+    try {
+      const kinds = ctx.session.__scenes.state.sightType;
 
-    const params: SightRequestParamsDto = {
-      lat: latitude,
-      lon: longitude,
-      radius: 1000,
-      apikey: process.env.SIGHTS_KEY,
-      kinds,
-    };
+      if (!kinds) {
+        throw new BadRequestException(SightPhrases.undefinedSightType);
+      }
 
-    const { data } = await this.findSight(
-      process.env.SIGHTS_URL + '/radius',
-      params,
-    );
-    let sights = data['features'];
-    let answerd = '';
+      const { latitude: lat, longitude: lon } = message.location;
 
-    for (let i = 0; i < sights.length; i++) {
-      const xid = sights[i].properties.xid;
-      let { data } = await this.findSight(
-        process.env.SIGHTS_URL + `/xid/${xid}`,
-        { apikey: process.env.SIGHTS_KEY },
+      const params = new SightRequestParamsDto(lat, lon, kinds);
+
+      const { data } = await this.findSight(
+        process.env.SIGHTS_URL + '/radius',
+        params,
       );
-      answerd += data;
-    }
-    sights = sights.map((el) => el.properties.name).join('\n');
+      const sights: SigthXidsDto[] = data.features;
 
-    ctx.sendMessage(sights);
+      if (!sights.length) {
+        await ctx.scene.reenter();
+        throw new NotFoundException(SightPhrases.notFoundSight);
+      }
+
+      const sightInfoPromises = sights.map((sight) =>
+        this.getSightInfo(sight.properties.xid),
+      );
+      const answerd = await Promise.all(sightInfoPromises);
+
+      const formattedResponse = this.formatSightInfo(answerd);
+
+      ctx.sendMessage(formattedResponse, actionButtons());
+      await ctx.scene.leave();
+    } catch (error) {
+      ctx.sendMessage(SightPhrases.sendError + error.message);
+    }
+  }
+
+  async getSightInfo(xid: string) {
+    const { data } = await this.findSight(
+      process.env.SIGHTS_URL + `/xid/${xid}`,
+      new SightRequestParamsDto(),
+    );
+
+    const formattedAddress = this.formatAddress(data.address);
+    const formattedCoordinates = this.formatCoordinates(data.point);
+
+    return new SightInfoDto(data.name, formattedAddress, formattedCoordinates);
+  }
+
+  formatSightInfo(sightInfoList: SightInfoDto[]) {
+    return sightInfoList
+      .map((el) => SightPhrases.sendSightInfo(el))
+      .join('\n\n');
+  }
+
+  formatAddress(address: AddressDto) {
+    return `${address.road} ${address.house_number}`;
+  }
+
+  formatCoordinates(point: PointDto) {
+    return `${point.lon}\n${point.lat}`;
   }
 
   async findSight(url: string, params?: SightRequestParamsDto) {
