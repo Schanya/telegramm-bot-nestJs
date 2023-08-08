@@ -1,1 +1,1 @@
-export type ContextData = 'weather' | 'subscription';
+export type ContextData = 'weather' | 'subscription' | 'sightCity';

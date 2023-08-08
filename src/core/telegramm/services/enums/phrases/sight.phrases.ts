@@ -8,4 +8,8 @@ export const SightPhrases = {
   sendError: `Произошла ошибка: `,
   sendSightInfo: (el: SightInfoDto) =>
     `Название: ${el.name}\nАдрес: ${el.address}\nКоординаты: ${el.coordinates}`,
+  enterCityName: `Введите название города`,
+  undefinedActionType: `Сначала выберите действие`,
+  notFoundCity: `Такой город не найден, повторите ввод`,
+  cityNameMistake: `В названии города ошибка, пожалуйста попробуйте снова`,
 };
