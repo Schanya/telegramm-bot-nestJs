@@ -2,13 +2,16 @@ export class SightRequestParamsDto {
   lat: number;
   lon: number;
   radius: number = 1000;
-  apikey: string = '5ae2e3f221c38a28845f05b6cec17836c01a4e7bff58f3d381fb2cd8';
+  apikey: string = process.env.SIGHTS_KEY;
+  limit: number = 3;
   kinds: string;
+  name: string;
 
-  constructor(lat?: number, lon?: number, kinds?: string) {
+  constructor(lat?: number, lon?: number, kinds?: string, cityName?: string) {
     this.lat = lat;
     this.lon = lon;
     this.kinds = kinds;
+    this.name = cityName;
   }
 }
 

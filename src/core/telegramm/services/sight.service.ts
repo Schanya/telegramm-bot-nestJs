@@ -40,6 +40,65 @@ export class SightService {
     }
   }
 
+  @On('text')
+  async getSightCity(
+    @Ctx() ctx: Context,
+    @Message() message: MessageType.TextMessage,
+  ) {
+    try {
+      const kinds = ctx.session.__scenes.state.sightType;
+      const cityName = message.text;
+      if (cityName == 'В указанном городе') {
+        ctx.sendMessage(SightPhrases.enterCityName, {
+          reply_markup: { remove_keyboard: true },
+        });
+
+        ctx.session.__scenes.type = 'sightCity';
+      } else {
+        if (ctx.session.__scenes.type != 'sightCity') {
+          throw new BadRequestException(SightPhrases.undefinedActionType);
+        }
+
+        const cityParams = new SightRequestParamsDto();
+        cityParams.name = cityName;
+
+        const { data: cityData } = await this.getSight(
+          process.env.SIGHTS_URL + '/geoname',
+          cityParams,
+        );
+
+        if (cityData?.error) {
+          throw new NotFoundException(SightPhrases.notFoundCity);
+        }
+
+        const { lat, lon } = cityData;
+        const params = new SightRequestParamsDto(lat, lon, kinds);
+
+        const { data } = await this.getSight(
+          process.env.SIGHTS_URL + '/radius',
+          params,
+        );
+        const sights: SigthXidsDto[] = data.features;
+
+        if (!sights.length) {
+          await ctx.scene.reenter();
+          throw new NotFoundException(SightPhrases.notFoundSight);
+        }
+
+        const sightInfoPromises = sights.map((sight) =>
+          this.getSightInfo(sight.properties.xid),
+        );
+        const answerd = await Promise.all(sightInfoPromises);
+
+        const formattedResponse = this.formatSightInfo(answerd);
+
+        ctx.sendMessage(formattedResponse, actionButtons());
+      }
+    } catch (error) {
+      ctx.sendMessage(SightPhrases.sendError + error.message);
+    }
+  }
+
   @On('location')
   async getSightNearby(
     @Ctx() ctx: Context,
@@ -56,7 +115,7 @@ export class SightService {
 
       const params = new SightRequestParamsDto(lat, lon, kinds);
 
-      const { data } = await this.findSight(
+      const { data } = await this.getSight(
         process.env.SIGHTS_URL + '/radius',
         params,
       );
@@ -82,7 +141,7 @@ export class SightService {
   }
 
   async getSightInfo(xid: string) {
-    const { data } = await this.findSight(
+    const { data } = await this.getSight(
       process.env.SIGHTS_URL + `/xid/${xid}`,
       new SightRequestParamsDto(),
     );
@@ -107,7 +166,13 @@ export class SightService {
     return `${point.lon}\n${point.lat}`;
   }
 
-  async findSight(url: string, params?: SightRequestParamsDto) {
-    return await axiosDownload(url, params);
+  async getSight(url: string, params?: SightRequestParamsDto) {
+    try {
+      const response = await axiosDownload(url, params);
+
+      return response;
+    } catch (error) {
+      throw new BadRequestException(SightPhrases.cityNameMistake);
+    }
   }
 }
