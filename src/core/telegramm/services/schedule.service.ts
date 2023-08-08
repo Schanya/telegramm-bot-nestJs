@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { TimeDto } from './dto/time.dto';
 import { WeatherDto } from './dto/weather.dto';
 
 @Injectable()

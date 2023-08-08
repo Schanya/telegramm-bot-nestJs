@@ -7,6 +7,7 @@ export function actionButtons() {
       Markup.button.callback('🌤 Weather', '/weather'),
       Markup.button.callback('🐱 Cat', '/cat'),
       Markup.button.callback('🐶 Dog', '/dog'),
+      Markup.button.callback('🔍 Sight', '/sight'),
     ],
     {
       columns: 2,

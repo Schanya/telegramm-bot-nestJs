@@ -11,6 +11,7 @@ import { EventModule } from '../event/event.module';
 import { NotificationService } from './services/schedule.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TimeService } from './services/time.service';
+import { SightService } from './services/sight.service';
 
 @Module({
   imports: [UserModule, CityModule, EventModule, ScheduleModule.forRoot()],
@@ -23,6 +24,7 @@ import { TimeService } from './services/time.service';
     WeatherService,
     NotificationService,
     TimeService,
+    SightService,
   ],
   exports: [
     TelegrammService,
@@ -32,6 +34,7 @@ import { TimeService } from './services/time.service';
     WeatherService,
     NotificationService,
     TimeService,
+    SightService,
   ],
 })
 export class TelegrammModule {}

@@ -40,4 +40,13 @@ export class TelegrammService {
     });
     ctx.scene.enter(SceneEnum.weatherScene);
   }
+
+  @Hears('🔍 Sight')
+  @Command('sight')
+  async sightHears(@Ctx() ctx: Context) {
+    await ctx.sendMessage('Отлично', {
+      reply_markup: { remove_keyboard: true },
+    });
+    ctx.scene.enter(SceneEnum.sightScene);
+  }
 }

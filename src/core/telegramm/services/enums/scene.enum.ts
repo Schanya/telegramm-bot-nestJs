@@ -5,4 +5,5 @@ export enum SceneEnum {
   catScene = 'cat',
   dogScene = 'dog',
   helpScene = 'help',
+  sightScene = 'sight',
 }

@@ -10,14 +10,14 @@ import { timeButtons } from '../buttons/time.button';
 import { Context } from '../interfaces/context.interface';
 import { TimeDto } from './dto/time.dto';
 import { SceneEnum } from './enums/scene.enum';
-import { TimeActionType } from './types/timeAction.type';
+import { TimeActionType } from './types/time-action.type';
 import {
   HOURS,
   HOUR_STEP,
   MINUTES,
   MINUTE_LIMIT,
   MINUTE_STEP,
-} from './сonstants/time.constants';
+} from '../сonstants/time.constants';
 import { NotificationService } from './schedule.service';
 import { WeatherService } from './weather.service';
 import { compareTimeWithCurrent } from './help/time-methods';
