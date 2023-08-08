@@ -8,7 +8,11 @@ export class WeatherDto {
 
 export class WeatherParamsDto {
   q: string;
-  lang: WeatherLang;
-  appid: string;
-  units: WeatherUnits;
+  lang: WeatherLang = 'ru';
+  appid: string = process.env.WEATHER_KEY;
+  units: WeatherUnits = 'metric';
+
+  constructor(cityName: string) {
+    this.q = cityName;
+  }
 }

@@ -1,11 +1,13 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   Model,
   Table,
 } from 'sequelize-typescript';
 import { City } from '../city/city.model';
+import { Event } from '../event/event.model';
 
 export interface UserCreationAttrs {
   telegrammID: number;
@@ -30,4 +32,7 @@ export class User extends Model<User, UserCreationAttrs> {
 
   @BelongsTo(() => City, 'city_id')
   city: City;
+
+  @BelongsToMany(() => Event, 'user_event', 'user_id', 'event_id')
+  events: Event[];
 }

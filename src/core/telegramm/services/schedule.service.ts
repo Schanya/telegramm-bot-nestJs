@@ -35,5 +35,14 @@ export class NotificationService {
       }
       console.log(`job: ${key} -> next: ${next}`);
     });
+    return jobs.keys();
+  }
+
+  deleteCron(cronName: string) {
+    const doesExistCron = this.schedulerRegistry.doesExist('cron', cronName);
+
+    if (doesExistCron) {
+      this.schedulerRegistry.deleteCronJob(cronName);
+    }
   }
 }

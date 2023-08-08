@@ -1,5 +1,7 @@
-export const HOURS = 24;
-export const MINUTES = 60;
-export const MINUTE_STEP = 1;
-export const HOUR_STEP = 1;
-export const MINUTE_LIMIT = 45;
+export const TIME = {
+  hours: 24,
+  minutes: 60,
+  minuteStep: 1,
+  hourStep: 1,
+  minuteLimit: 45,
+};
