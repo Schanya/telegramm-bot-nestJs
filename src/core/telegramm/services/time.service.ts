@@ -10,18 +10,26 @@ import { timeButtons } from '../buttons/time.button';
 import { Context } from '../interfaces/context.interface';
 import { TimeDto } from './dto/time.dto';
 import { SceneEnum } from './enums/scene.enum';
-import { TimeActionType } from './types/timeAction.type';
+import { TimeActionType } from './types/time-action.type';
 import {
   HOURS,
   HOUR_STEP,
   MINUTES,
   MINUTE_LIMIT,
   MINUTE_STEP,
-} from './сonstants/time.constants';
+} from '../сonstants/time.constants';
+import { NotificationService } from './schedule.service';
+import { WeatherService } from './weather.service';
+import { compareTimeWithCurrent } from './help/time-methods';
+import { actionButtons } from '../buttons/actions.button';
 
 @Scene(SceneEnum.timeScene)
 export class TimeService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
+    private readonly weatherService: WeatherService,
+  ) {}
 
   @SceneEnter()
   async startTimeScene(@Ctx() ctx: Context) {
@@ -35,7 +43,7 @@ export class TimeService {
 
     await ctx.reply('Введите время, в которое хотите получать обновления');
     await ctx.reply(
-      `Текущее время: ${initialTime.hours}:${initialTime.minutes}`,
+      `Текущее время: ${this.formatTime(initialTime)}`,
       timeButtons(),
     );
   }
@@ -56,6 +64,7 @@ export class TimeService {
     currentTime: TimeDto,
     @Ctx() ctx: Context,
   ) {
+    ctx.answerCbQuery();
     switch (action) {
       case 'increaseHours':
         currentTime.hours = (currentTime.hours + HOUR_STEP) % HOURS;
@@ -87,8 +96,6 @@ export class TimeService {
   }
 
   async handleDoneAction(@Ctx() ctx: Context, currentTime: TimeDto) {
-    ctx.reply(`Вы выбрали время: ${this.formatTime(currentTime)}`);
-
     const cityInfo: CreateCityDto = { name: ctx.session.__scenes.state.city };
     const userInfo: CreateUserDto = {
       name: ctx.callbackQuery.from.first_name,
@@ -101,15 +108,27 @@ export class TimeService {
 
     const userData: UserDataDto = { cityInfo, userInfo, eventInfo };
 
-    await this.userService
-      .saveUserWithData(userData)
-      .then(() => {
-        ctx.reply(
-          'Данные успешно сохранены, теперь вы будете получать уведомления',
-        );
-        ctx.scene.leave();
-      })
-      .catch((e) => ctx.reply(`${e.message}`));
+    const response = await this.userService.saveUserWithData(userData);
+
+    if (compareTimeWithCurrent(eventInfo.time)) {
+      const userWeather = new Map();
+      const weather = await this.weatherService.getWeather(response.city.name);
+
+      userWeather.set(response.user.telegrammID, weather);
+
+      await this.notificationService.addCronJob(
+        `notification for event ${response.event.id}`,
+        response.event.time,
+        this.weatherService.handleCron,
+        userWeather,
+      );
+    }
+
+    ctx.sendMessage(
+      `Напоминание установлено на ${this.formatTime(currentTime)}`,
+      actionButtons(),
+    );
+    ctx.scene.leave();
   }
 
   updateMessage(@Ctx() ctx: Context, currentTime: TimeDto) {

@@ -1,13 +1,6 @@
-import { BadRequestException } from '@nestjs/common';
-import {
-  Action,
-  Ctx,
-  InjectBot,
-  Message,
-  On,
-  Scene,
-  SceneEnter,
-} from 'nestjs-telegraf';
+import { BadRequestException, OnModuleInit } from '@nestjs/common';
+import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
+import { EventService } from 'src/core/event/event.service';
 import { Telegraf } from 'telegraf';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 import { weatherButtons } from '../buttons/weather.button';
@@ -15,14 +8,56 @@ import { Context } from '../interfaces/context.interface';
 import { WeatherDto, WeatherParamsDto } from './dto/weather.dto';
 import { SceneEnum } from './enums/scene.enum';
 import { axiosDownload } from './help/httpRequest';
+import { compareTimeWithCurrent } from './help/time-methods';
+import { NotificationService } from './schedule.service';
 
 @Scene(SceneEnum.weatherScene)
-export class WeatherService {
-  constructor(@InjectBot() private readonly bot: Telegraf<Context>) {}
+export class WeatherService implements OnModuleInit {
+  constructor(
+    private readonly eventService: EventService,
+    private readonly notificationService: NotificationService,
+  ) {}
+
+  async onModuleInit() {
+    const events = await this.eventService.findAll({});
+
+    for (const event of events) {
+      const cronName = `notification for event ${event.id}`;
+      const time = event.time;
+
+      if (compareTimeWithCurrent(time)) {
+        const users = await event.$get('users');
+        const usersWeather = new Map();
+
+        for (const user of users) {
+          const city = await user.$get('city');
+          const weather = await this.getWeather(city.name);
+          usersWeather.set(user.telegrammID, weather);
+        }
+
+        await this.notificationService.addCronJob(
+          cronName,
+          time,
+          this.handleCron,
+          usersWeather,
+        );
+      }
+    }
+  }
+
+  async handleCron(usersWeather: Map<number, WeatherDto>) {
+    const bot = new Telegraf(process.env.TELEGRAMM_BOT_TOKEN);
+    for (const [id, weather] of usersWeather) {
+      await bot.telegram.sendMessage(
+        id,
+        `Погода: ${weather.description}\nТемпература: ${weather.temperature}°C`,
+      );
+    }
+  }
 
   @SceneEnter()
   async startWeatherScene(@Ctx() ctx: Context) {
-    await ctx.reply('Выберите действие', weatherButtons());
+    await ctx.sendMessage('Выберите действие', weatherButtons());
   }
 
   @Action('/city')
@@ -42,17 +77,6 @@ export class WeatherService {
     ctx.session.__scenes.type = 'subscription';
   }
 
-  async sendWeather(
-    chatID: number,
-    weatherDescription: string,
-    temperature: number,
-  ) {
-    await this.bot.telegram.sendMessage(
-      chatID,
-      `Погода: ${weatherDescription}\nТемпература: ${temperature}°C`,
-    );
-  }
-
   async getWeather(city: string) {
     try {
       const params: WeatherParamsDto = {
@@ -63,10 +87,12 @@ export class WeatherService {
       };
       const { data } = await axiosDownload(process.env.WEATHER_URL, params);
 
+      const cityName = data.name;
       const weatherDescription = data['weather'][0].description;
       const temperature = Number(data['main'].temp);
 
       const result: WeatherDto = {
+        cityName,
         description: weatherDescription,
         temperature,
       };
@@ -84,7 +110,9 @@ export class WeatherService {
   ) {
     try {
       const messageText = message.text;
-      let { description, temperature } = await this.getWeather(messageText);
+      let { cityName, description, temperature } = await this.getWeather(
+        messageText,
+      );
 
       switch (ctx.session.__scenes.type) {
         case 'weather': {
@@ -97,7 +125,7 @@ export class WeatherService {
           break;
         }
         case 'subscription': {
-          ctx.state.city = messageText;
+          ctx.state.city = cityName;
           ctx.state.evenType = 'weather';
           ctx.scene.enter(SceneEnum.timeScene, ctx.state);
 

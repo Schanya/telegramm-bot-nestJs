@@ -1,6 +1,7 @@
 import { WeatherLang, WeatherUnits } from '../types/weather.type';
 
 export class WeatherDto {
+  cityName: string;
   description: string;
   temperature: number;
 }
