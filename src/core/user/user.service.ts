@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './user.model';
 import { UserOptions } from './dto/find-user.options';
@@ -7,6 +11,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserDataDto } from './dto/user-data.dto';
 import { CityService } from '../city/city.service';
 import { EventService } from '../event/event.service';
+import { formatTime } from '../telegramm/services/help/time-methods';
 
 @Injectable()
 export class UserService {
@@ -43,11 +48,11 @@ export class UserService {
   }
 
   public async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.findBy({
+    const user = await this.findBy({
       telegrammID: createUserDto.telegrammID,
     });
 
-    if (existingUser) {
+    if (user) {
       throw new BadRequestException('Such user already exists');
     }
 
@@ -66,7 +71,7 @@ export class UserService {
   }
 
   public async saveUserWithData(userData: UserDataDto) {
-    const { userInfo, cityInfo, eventInfo } = userData;
+    const { cityInfo, userInfo, eventInfo } = userData;
 
     let existingCity = await this.cityService.findBy({
       name: cityInfo.name,
@@ -98,5 +103,24 @@ export class UserService {
       city: existingCity,
       event,
     };
+  }
+
+  public async checkUserEvents(userID: number, eventType: EventType) {
+    const user = await this.findBy({ telegrammID: userID });
+
+    if (user) {
+      const userEvents = await user.$get('events', { type: eventType });
+      if (userEvents.length == 1) {
+        const userCity = await user.$get('city');
+        throw new BadRequestException(
+          `Вы уже подписаны на рассылку:\n Город: ${
+            userCity.name
+          } \n Время: ${formatTime({
+            hours: userEvents[0].time.getHours(),
+            minutes: userEvents[0].time.getMinutes(),
+          })}`,
+        );
+      }
+    }
   }
 }

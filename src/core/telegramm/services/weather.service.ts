@@ -8,21 +8,25 @@ import { Context } from '../interfaces/context.interface';
 import { WeatherDto, WeatherParamsDto } from './dto/weather.dto';
 import { SceneEnum } from './enums/scene.enum';
 import { axiosDownload } from './help/httpRequest';
-import { compareTimeWithCurrent } from './help/time-methods';
+import { compareTimeWithCurrent, formatTime } from './help/time-methods';
 import { NotificationService } from './schedule.service';
+import { actionButtons } from '../buttons/actions.button';
+import { WeatherPhrases } from './enums/phrases/weather.phrases';
+import { UserService } from 'src/core/user/user.service';
 
 @Scene(SceneEnum.weatherScene)
 export class WeatherService implements OnModuleInit {
   constructor(
     private readonly eventService: EventService,
     private readonly notificationService: NotificationService,
+    private readonly userService: UserService,
   ) {}
 
   async onModuleInit() {
     const events = await this.eventService.findAll({});
 
     for (const event of events) {
-      const cronName = `notification for event ${event.id}`;
+      const cronName = `${event.id}`;
       const time = event.time;
 
       if (compareTimeWithCurrent(time)) {
@@ -50,46 +54,79 @@ export class WeatherService implements OnModuleInit {
     for (const [id, weather] of usersWeather) {
       await bot.telegram.sendMessage(
         id,
-        `Погода: ${weather.description}\nТемпература: ${weather.temperature}°C`,
+        WeatherPhrases.getWeatherInfo(weather.description, weather.temperature),
       );
     }
   }
 
   @SceneEnter()
   async startWeatherScene(@Ctx() ctx: Context) {
-    await ctx.sendMessage('Выберите действие', weatherButtons());
+    await ctx.sendMessage(WeatherPhrases.start, weatherButtons());
   }
 
   @Action('/city')
   async cityAction(@Ctx() ctx: Context) {
-    ctx.editMessageText(
-      'Введите название города, погоду которого хотите знать',
-    );
+    await ctx.answerCbQuery();
+    await ctx.sendMessage(WeatherPhrases.getWeather);
     ctx.session.__scenes.type = 'weather';
   }
 
   @Action('/subscription')
   async subscriptionAction(@Ctx() ctx: Context) {
-    await ctx.editMessageText(
-      'Введите название города, погоду которого хотите знать',
-    );
+    await ctx.answerCbQuery();
+    await ctx.sendMessage(WeatherPhrases.getSubscription);
 
     ctx.session.__scenes.type = 'subscription';
   }
 
+  @Action('/unsubscribe')
+  async unsubscribeAction(@Ctx() ctx: Context) {
+    try {
+      await ctx.answerCbQuery();
+      const telegrammID = ctx.callbackQuery.from.id;
+      const user = await this.userService.findBy({ telegrammID });
+
+      if (!user) {
+        throw new BadRequestException(WeatherPhrases.unsubscribeNotification);
+      }
+
+      const city = await user.$get('city');
+
+      const events = await user.$get('events', { type: 'weather' });
+      const event = events[0];
+
+      if (!event) {
+        throw new BadRequestException(WeatherPhrases.unsubscribeNotification);
+      }
+
+      this.notificationService.deleteCron(`${event.id}`);
+
+      await this.eventService.delete(event.id);
+
+      ctx.sendMessage(
+        WeatherPhrases.notificationDeleted(
+          city.name,
+          formatTime({
+            hours: event.time.getHours(),
+            minutes: event.time.getMinutes(),
+          }),
+        ),
+        actionButtons(),
+      );
+      ctx.scene.leave();
+    } catch (error) {
+      ctx.sendMessage(error.message);
+    }
+  }
+
   async getWeather(city: string) {
     try {
-      const params: WeatherParamsDto = {
-        q: city,
-        lang: 'ru',
-        appid: process.env.WEATHER_KEY,
-        units: 'metric',
-      };
+      const params = new WeatherParamsDto(city);
       const { data } = await axiosDownload(process.env.WEATHER_URL, params);
 
       const cityName = data.name;
-      const weatherDescription = data['weather'][0].description;
-      const temperature = Number(data['main'].temp);
+      const weatherDescription = data.weather[0].description;
+      const temperature = Number(data.main.temp);
 
       const result: WeatherDto = {
         cityName,
@@ -99,7 +136,7 @@ export class WeatherService implements OnModuleInit {
 
       return result;
     } catch (error) {
-      throw new BadRequestException();
+      throw new BadRequestException(WeatherPhrases.cityNameExeption);
     }
   }
 
@@ -109,7 +146,12 @@ export class WeatherService implements OnModuleInit {
     @Message() message: MessageType.TextMessage,
   ) {
     try {
+      if (!ctx.session.__scenes.type) {
+        throw new BadRequestException(WeatherPhrases.undefinedActionType);
+      }
+
       const messageText = message.text;
+
       let { cityName, description, temperature } = await this.getWeather(
         messageText,
       );
@@ -117,7 +159,8 @@ export class WeatherService implements OnModuleInit {
       switch (ctx.session.__scenes.type) {
         case 'weather': {
           await ctx.sendMessage(
-            `Погода: ${description}\nТемпература: ${temperature}°C`,
+            WeatherPhrases.getWeatherInfo(description, temperature),
+            actionButtons(),
           );
 
           await ctx.scene.leave();
@@ -127,13 +170,14 @@ export class WeatherService implements OnModuleInit {
         case 'subscription': {
           ctx.state.city = cityName;
           ctx.state.evenType = 'weather';
-          ctx.scene.enter(SceneEnum.timeScene, ctx.state);
+          await ctx.scene.leave();
+          await ctx.scene.enter(SceneEnum.timeScene, ctx.state);
 
           break;
         }
       }
-    } catch (e) {
-      ctx.sendMessage('В названии города что-то не так, повторите ввод');
+    } catch (error) {
+      await ctx.sendMessage(WeatherPhrases.sendError + error.message);
     }
   }
 }
