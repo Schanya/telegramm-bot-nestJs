@@ -13,6 +13,7 @@ import { NotificationService } from './schedule.service';
 import { actionButtons } from '../buttons/actions.button';
 import { WeatherPhrases } from './enums/phrases/weather.phrases';
 import { UserService } from 'src/core/user/user.service';
+import { telegramm, weather } from 'env';
 
 @Scene(SceneEnum.weatherScene)
 export class WeatherService implements OnModuleInit {
@@ -50,7 +51,7 @@ export class WeatherService implements OnModuleInit {
   }
 
   async handleCron(usersWeather: Map<number, WeatherDto>) {
-    const bot = new Telegraf(process.env.TELEGRAMM_BOT_TOKEN);
+    const bot = new Telegraf(telegramm.token);
     for (const [id, weather] of usersWeather) {
       await bot.telegram.sendMessage(
         id,
@@ -122,7 +123,7 @@ export class WeatherService implements OnModuleInit {
   async getWeather(city: string) {
     try {
       const params = new WeatherParamsDto(city);
-      const { data } = await axiosDownload(process.env.WEATHER_URL, params);
+      const { data } = await axiosDownload(weather.url, params);
 
       const cityName = data.name;
       const weatherDescription = data.weather[0].description;

@@ -1,4 +1,5 @@
 import { WeatherLang, WeatherUnits } from '../types/weather.type';
+import { weather } from 'env';
 
 export class WeatherDto {
   cityName: string;
@@ -9,7 +10,7 @@ export class WeatherDto {
 export class WeatherParamsDto {
   q: string;
   lang: WeatherLang = 'ru';
-  appid: string = process.env.WEATHER_KEY;
+  appid: string = weather.key;
   units: WeatherUnits = 'metric';
 
   constructor(cityName: string) {
