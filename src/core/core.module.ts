@@ -5,11 +5,12 @@ import { EventModule } from './event/event.module';
 import { sessionMiddleware } from './telegramm/middleware/session.middleware';
 import { TelegrammModule } from './telegramm/telegramm.module';
 import { UserModule } from './user/user.module';
+import { telegramm } from 'env';
 
 @Module({
   imports: [
     TelegrafModule.forRoot({
-      token: process.env.TELEGRAMM_BOT_TOKEN,
+      token: telegramm.token,
       middlewares: [sessionMiddleware],
       include: [TelegrammModule],
     }),

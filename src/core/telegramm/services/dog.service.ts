@@ -3,6 +3,7 @@ import { Telegraf } from 'telegraf';
 import { Context } from '../interfaces/context.interface';
 import { SceneEnum } from './enums/scene.enum';
 import { axiosDownload } from './help/httpRequest';
+import { dog } from 'env';
 
 @Scene(SceneEnum.dogScene)
 export class DogService {
@@ -10,7 +11,7 @@ export class DogService {
 
   @SceneEnter()
   async getDogImage(ctx: Context) {
-    const { data } = await axiosDownload(process.env.DOG_URL);
+    const { data } = await axiosDownload(dog.url);
 
     await this.bot.telegram.sendPhoto(ctx.message.chat.id, data.url);
   }
