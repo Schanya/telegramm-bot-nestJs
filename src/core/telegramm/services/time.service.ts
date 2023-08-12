@@ -9,7 +9,7 @@ import { Message } from 'telegraf/typings/core/types/typegram';
 import { actionButtons } from '../buttons/actions.button';
 import { timeButtons } from '../buttons/time.button';
 import { Context } from '../interfaces/context.interface';
-import { TIME } from '../сonstants/time.constants';
+import { TIME } from './сonstants/time.constants';
 import { TimeDto } from './dto/time.dto';
 import { TimePhrases } from './enums/phrases/time.phrases';
 import { SceneEnum } from './enums/scene.enum';
@@ -17,7 +17,7 @@ import {
   compareTimeWithCurrent,
   formatTime,
   parseTime,
-} from './help/time-methods';
+} from './utils/time-methods';
 import { NotificationService } from './schedule.service';
 import { TimeActionType } from './types/time-action.type';
 import { WeatherService } from './weather.service';

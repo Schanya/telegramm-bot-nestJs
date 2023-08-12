@@ -7,11 +7,11 @@ import { WeatherDto } from './dto/weather.dto';
 export class NotificationService {
   constructor(private schedulerRegistry: SchedulerRegistry) {}
 
-  async addCronJob(
+  async addCronJob<T>(
     name: string,
     time: Date,
-    task: (params: Map<number, WeatherDto>) => Promise<void>,
-    params: Map<number, WeatherDto>,
+    task: (params: Map<T, T>) => Promise<void>,
+    params: Map<T, T>,
   ) {
     const cronTime = `0 ${time.getMinutes()} ${time.getHours()} * * *`;
 
@@ -27,7 +27,7 @@ export class NotificationService {
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
     jobs.forEach((value, key, map) => {
-      let next;
+      let next: string;
       try {
         next = value.nextDates().toJSDate();
       } catch (e) {

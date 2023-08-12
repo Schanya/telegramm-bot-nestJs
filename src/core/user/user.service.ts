@@ -11,7 +11,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserDataDto } from './dto/user-data.dto';
 import { CityService } from '../city/city.service';
 import { EventService } from '../event/event.service';
-import { formatTime } from '../telegramm/services/help/time-methods';
+import { formatTime } from '../telegramm/services/utils/time-methods';
 
 @Injectable()
 export class UserService {
