@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf';
-import { SIGHT_TYPE } from '../../сonstants/sight.constants';
+import { SIGHT_TYPE } from '../../services/сonstants/sight.constants';
 
 export function sightTypeButtons() {
   const buttons = [];
