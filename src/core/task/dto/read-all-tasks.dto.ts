@@ -1,3 +1,5 @@
 export class ReadAllTaskDto {
-  name?: string;
+  title?: string;
+  description?: string;
+  time?: Date;
 }

@@ -1,3 +1,6 @@
 export class TaskOptions {
-  name?: string;
+  id?: number;
+  title?: string;
+  description?: string;
+  time?: Date;
 }

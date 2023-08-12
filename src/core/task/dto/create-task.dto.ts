@@ -1,3 +1,5 @@
 export class CreateTaskDto {
-  name: string;
+  title: string;
+  description: string;
+  time: Date;
 }
