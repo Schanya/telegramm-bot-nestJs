@@ -8,6 +8,6 @@ export const WeatherPhrases = {
   sendError: `Произошла ошибка: `,
   undefinedActionType: `Для начала выберите действие`,
   notificationDeleted: (cityName: string, time: string) =>
-    `Подписка на город: ${cityName} и  время: ${time})} успешно удалена`,
+    `Подписка на город: ${cityName} и  время: ${time} успешно удалена`,
   unsubscribeNotification: `Вы не подписаны на рассылку`,
 };

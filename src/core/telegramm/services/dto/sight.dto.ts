@@ -27,7 +27,7 @@ export class SigthXidsDto {
 
 export class AddressDto {
   road: string;
-  house_number: string;
+  house_number?: string;
 }
 
 export class PointDto {

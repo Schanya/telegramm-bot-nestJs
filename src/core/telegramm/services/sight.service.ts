@@ -3,7 +3,7 @@ import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 import { sightButtons } from '../buttons/sight/start.button';
 import { Context } from '../interfaces/context.interface';
 import { SceneEnum } from './enums/scene.enum';
-import { axiosDownload } from './help/httpRequest';
+import { axiosDownload } from './utils/httpRequest';
 import {
   AddressDto,
   PointDto,
@@ -13,11 +13,12 @@ import {
 } from './dto/sight.dto';
 import { sightTypeButtons } from '../buttons/sight/sight-type.button';
 import { SightType } from './types/sight.type';
-import { SIGHT_TYPE } from '../сonstants/sight.constants';
+import { SIGHT_TYPE } from './сonstants/sight.constants';
 import { callbackQuery } from 'telegraf/filters';
 import { SightPhrases } from './enums/phrases/sight.phrases';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { actionButtons } from '../buttons/actions.button';
+import { sight } from 'env';
 
 @Scene(SceneEnum.sightScene)
 export class SightService {
@@ -59,11 +60,10 @@ export class SightService {
           throw new BadRequestException(SightPhrases.undefinedActionType);
         }
 
-        const cityParams = new SightRequestParamsDto();
-        cityParams.name = cityName;
+        const cityParams: SightRequestParamsDto = { name: cityName };
 
         const { data: cityData } = await this.getSight(
-          process.env.SIGHTS_URL + '/geoname',
+          sight.url + '/geoname',
           cityParams,
         );
 
@@ -72,12 +72,9 @@ export class SightService {
         }
 
         const { lat, lon } = cityData;
-        const params = new SightRequestParamsDto(lat, lon, kinds);
+        const params: SightRequestParamsDto = { lat, lon, kinds, limit: 3 };
 
-        const { data } = await this.getSight(
-          process.env.SIGHTS_URL + '/radius',
-          params,
-        );
+        const { data } = await this.getSight(sight.url + '/radius', params);
         const sights: SigthXidsDto[] = data.features;
 
         if (!sights.length) {
@@ -93,6 +90,7 @@ export class SightService {
         const formattedResponse = this.formatSightInfo(answerd);
 
         ctx.sendMessage(formattedResponse, actionButtons());
+        await ctx.scene.leave();
       }
     } catch (error) {
       ctx.sendMessage(SightPhrases.sendError + error.message);
@@ -113,12 +111,9 @@ export class SightService {
 
       const { latitude: lat, longitude: lon } = message.location;
 
-      const params = new SightRequestParamsDto(lat, lon, kinds);
+      const params: SightRequestParamsDto = { lat, lon, kinds };
 
-      const { data } = await this.getSight(
-        process.env.SIGHTS_URL + '/radius',
-        params,
-      );
+      const { data } = await this.getSight(sight.url + '/radius', params);
       const sights: SigthXidsDto[] = data.features;
 
       if (!sights.length) {
@@ -142,7 +137,7 @@ export class SightService {
 
   async getSightInfo(xid: string) {
     const { data } = await this.getSight(
-      process.env.SIGHTS_URL + `/xid/${xid}`,
+      sight.url + `/xid/${xid}`,
       new SightRequestParamsDto(),
     );
 
@@ -168,7 +163,11 @@ export class SightService {
 
   async getSight(url: string, params?: SightRequestParamsDto) {
     try {
-      const response = await axiosDownload(url, params);
+      const response = await axiosDownload(url, {
+        ...params,
+        apikey: sight.key,
+        radius: 1000,
+      });
 
       return response;
     } catch (error) {
