@@ -36,14 +36,6 @@ export class TaskService {
   }
 
   public async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    const existingTask = await this.findBy({
-      name: createTaskDto.name,
-    });
-
-    if (existingTask) {
-      throw new BadRequestException('Such task already exists');
-    }
-
     const createdTask = await this.taskRepository.create(createTaskDto);
 
     return createdTask;

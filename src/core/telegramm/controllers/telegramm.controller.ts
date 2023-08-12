@@ -49,4 +49,13 @@ export class TelegrammService {
     });
     ctx.scene.enter(SceneEnum.sightScene);
   }
+
+  @Hears('📋 Tasks')
+  @Command('task')
+  async taskHears(@Ctx() ctx: Context) {
+    await ctx.sendMessage('Отлично', {
+      reply_markup: { remove_keyboard: true },
+    });
+    ctx.scene.enter(SceneEnum.taskScene);
+  }
 }

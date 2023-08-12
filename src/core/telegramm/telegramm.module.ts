@@ -12,9 +12,18 @@ import { NotificationService } from './services/schedule.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TimeService } from './services/time.service';
 import { SightService } from './services/sight.service';
+import { TaskModule } from '../task/task.module';
+import { TaskService } from './services/task.service';
+import { DateService } from './services/date.service';
 
 @Module({
-  imports: [UserModule, CityModule, EventModule, ScheduleModule.forRoot()],
+  imports: [
+    UserModule,
+    CityModule,
+    EventModule,
+    TaskModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [],
   providers: [
     TelegrammService,
@@ -25,6 +34,8 @@ import { SightService } from './services/sight.service';
     NotificationService,
     TimeService,
     SightService,
+    TaskService,
+    DateService,
   ],
   exports: [
     TelegrammService,
@@ -35,6 +46,8 @@ import { SightService } from './services/sight.service';
     NotificationService,
     TimeService,
     SightService,
+    TaskService,
+    DateService,
   ],
 })
 export class TelegrammModule {}

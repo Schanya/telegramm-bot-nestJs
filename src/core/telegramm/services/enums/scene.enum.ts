@@ -6,4 +6,6 @@ export enum SceneEnum {
   dogScene = 'dog',
   helpScene = 'help',
   sightScene = 'sight',
+  taskScene = 'task',
+  dateScene = 'date',
 }
