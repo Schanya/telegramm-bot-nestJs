@@ -3,23 +3,23 @@ import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { EventService } from 'src/core/event/event.service';
 import { Telegraf } from 'telegraf';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { weatherButtons } from '../buttons/weather.button';
-import { Context } from '../interfaces/context.interface';
+import { weatherButtons } from './buttons/weather.button';
+import { Context } from '../../interfaces/context.interface';
 import { WeatherDto, WeatherParamsDto } from './dto/weather.dto';
-import { SceneEnum } from './enums/scene.enum';
-import { axiosDownload } from './utils/httpRequest';
-import { compareTimeWithCurrent, formatTime } from './utils/time-methods';
-import { NotificationService } from './schedule.service';
-import { actionButtons } from '../buttons/actions.button';
-import { WeatherPhrases } from './enums/phrases/weather.phrases';
+import { SceneEnum } from '../../enums/scene.enum';
+import { axiosDownload } from '../utils/httpRequest';
+import { compareTimeWithCurrent, formatTime } from '../utils/time-methods';
+import { NotificationScene } from '../notification/notification.scene';
+import { actionButtons } from '../../buttons/actions.button';
+import { WeatherPhrases } from './enums/weather.phrases';
 import { UserService } from 'src/core/user/user.service';
 import { telegramm, weather } from 'env';
 
 @Scene(SceneEnum.weatherScene)
-export class WeatherService implements OnModuleInit {
+export class WeatherScene implements OnModuleInit {
   constructor(
     private readonly eventService: EventService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: NotificationScene,
     private readonly userService: UserService,
   ) {}
 

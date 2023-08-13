@@ -1,4 +1,4 @@
-import { TimeDto } from '../dto/time.dto';
+import { TimeDto } from '../time/dto/time.dto';
 
 export function compareTimeWithCurrent(date: Date) {
   let currentTime: TimeDto = {

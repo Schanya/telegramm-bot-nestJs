@@ -2,7 +2,7 @@ import { Command, Ctx, Hears, Start, Update } from 'nestjs-telegraf';
 
 import { actionButtons } from '../buttons/actions.button';
 import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from '../services/enums/scene.enum';
+import { SceneEnum } from '../enums/scene.enum';
 
 @Update()
 export class TelegrammService {

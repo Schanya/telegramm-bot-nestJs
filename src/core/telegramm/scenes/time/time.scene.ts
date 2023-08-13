@@ -6,28 +6,28 @@ import { UserDataDto } from 'src/core/user/dto/user-data.dto';
 import { UserService } from 'src/core/user/user.service';
 import { callbackQuery } from 'telegraf/filters';
 import { Message } from 'telegraf/typings/core/types/typegram';
-import { actionButtons } from '../buttons/actions.button';
-import { timeButtons } from '../buttons/time.button';
-import { Context } from '../interfaces/context.interface';
-import { TIME } from './сonstants/time.constants';
+import { actionButtons } from '../../buttons/actions.button';
+import { timeButtons } from './buttons/time.button';
+import { Context } from '../../interfaces/context.interface';
+import { TIME } from './enums/time.constants';
 import { TimeDto } from './dto/time.dto';
-import { TimePhrases } from './enums/phrases/time.phrases';
-import { SceneEnum } from './enums/scene.enum';
+import { TimePhrases } from './enums/time.phrases';
+import { SceneEnum } from '../../enums/scene.enum';
 import {
   compareTimeWithCurrent,
   formatTime,
   parseTime,
-} from './utils/time-methods';
-import { NotificationService } from './schedule.service';
+} from '../utils/time-methods';
+import { NotificationScene } from '../notification/notification.scene';
 import { TimeActionType } from './types/time-action.type';
-import { WeatherService } from './weather.service';
+import { WeatherScene } from '../weather/weather.scene';
 
 @Scene(SceneEnum.timeScene)
-export class TimeService {
+export class TimeScene {
   constructor(
     private readonly userService: UserService,
-    private readonly notificationService: NotificationService,
-    private readonly weatherService: WeatherService,
+    private readonly notificationService: NotificationScene,
+    private readonly weatherService: WeatherScene,
   ) {}
 
   @SceneEnter()

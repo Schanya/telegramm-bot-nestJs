@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf';
-import { TaskActionEnum } from '../../services/enums/task-action.enum';
+import { TaskActionEnum } from '../enums/task-action.enum';
 
 export function taskActionButtons() {
   return Markup.inlineKeyboard([

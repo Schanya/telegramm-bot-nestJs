@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { WeatherDto } from './dto/weather.dto';
 
 @Injectable()
-export class NotificationService {
+export class NotificationScene {
   constructor(private schedulerRegistry: SchedulerRegistry) {}
 
   async addCronJob<T>(

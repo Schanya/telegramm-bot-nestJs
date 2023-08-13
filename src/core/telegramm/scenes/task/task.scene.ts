@@ -1,28 +1,28 @@
 import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Markup } from 'telegraf';
-import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from './enums/scene.enum';
+import { Context } from '../../interfaces/context.interface';
+import { SceneEnum } from '../../enums/scene.enum';
 
-import { taskActionButtons } from '../buttons/task/task-action.button';
-import { TaskPhrases } from './enums/phrases/task.phrases';
+import { taskActionButtons } from './buttons/task-action.button';
+import { TaskPhrases } from './enums/task.phrases';
 
 import { ReadAllTaskDto } from 'src/core/task/dto/read-all-tasks.dto';
 import { Task } from 'src/core/task/task.model';
 import { UserService } from 'src/core/user/user.service';
 import { callbackQuery } from 'telegraf/filters';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { TaskService as Service } from '../../task/task.service';
-import { actionButtons } from '../buttons/actions.button';
-import { tasksListButtons } from '../buttons/task/task-list.button';
+import { TaskService } from '../../../task/task.service';
+import { actionButtons } from '../../buttons/actions.button';
+import { tasksListButtons } from './buttons/task-list.button';
 import { CreateTaskParams } from './dto/task.dto';
 import { TaskContextStepEnum } from './enums/task-context-step.enum';
-import { formatTasks } from './utils/task-methods';
+import { formatTasks } from '../utils/task-methods';
 import { TaskActionEnum } from './enums/task-action.enum';
 
 @Scene(SceneEnum.taskScene)
-export class TaskService {
+export class TaskScene {
   constructor(
-    private readonly taskService: Service,
+    private readonly taskService: TaskService,
     private readonly userService: UserService,
   ) {}
 
