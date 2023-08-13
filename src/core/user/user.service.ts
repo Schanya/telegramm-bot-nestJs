@@ -12,6 +12,7 @@ import { UserDataDto } from './dto/user-data.dto';
 import { CityService } from '../city/city.service';
 import { EventService } from '../event/event.service';
 import { formatTime } from '../telegramm/scenes/utils/time-methods';
+import { EventType } from '../event/types/event.type';
 
 @Injectable()
 export class UserService {
@@ -103,24 +104,5 @@ export class UserService {
       city: existingCity,
       event,
     };
-  }
-
-  public async checkUserEvents(userID: number, eventType: EventType) {
-    const user = await this.findBy({ telegrammID: userID });
-
-    if (user) {
-      const userEvents = await user.$get('events', { type: eventType });
-      if (userEvents.length == 1) {
-        const userCity = await user.$get('city');
-        throw new BadRequestException(
-          `Вы уже подписаны на рассылку:\n Город: ${
-            userCity.name
-          } \n Время: ${formatTime({
-            hours: userEvents[0].time.getHours(),
-            minutes: userEvents[0].time.getMinutes(),
-          })}`,
-        );
-      }
-    }
   }
 }

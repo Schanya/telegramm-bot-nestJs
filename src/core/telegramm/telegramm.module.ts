@@ -1,5 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { TelegrammService } from './controllers/telegramm.controller';
+import { TelegrammController } from './controllers/telegramm.controller';
 import { AppModule } from 'src/app.module';
 import { CatScene } from './scenes/cat/cat.scene';
 import { DogScene } from './scenes/dog/dog.scene';
@@ -26,7 +26,7 @@ import { DateScene } from './scenes/date/date.scene';
   ],
   controllers: [],
   providers: [
-    TelegrammService,
+    TelegrammController,
     CatScene,
     DogScene,
     HelpScene,
@@ -38,7 +38,7 @@ import { DateScene } from './scenes/date/date.scene';
     DateScene,
   ],
   exports: [
-    TelegrammService,
+    TelegrammController,
     CatScene,
     DogScene,
     HelpScene,

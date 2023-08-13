@@ -1,6 +1,3 @@
-export type TimeActionType =
-  | 'done'
-  | 'decreaseMinutes'
-  | 'increaseMinutes'
-  | 'increaseHours'
-  | 'decreaseHours';
+import { TimeActionEnum } from '../enums/time-action.enum';
+
+export type TimeActionType = TimeActionEnum;
