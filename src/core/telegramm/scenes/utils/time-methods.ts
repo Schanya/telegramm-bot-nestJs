@@ -22,6 +22,9 @@ export function formatTime(currentTime: TimeDto): string {
   ).padStart(2, '0')}`;
 }
 
+export function dateToTimeDto(date: Date): TimeDto {
+  return { hours: date.getHours(), minutes: date.getMinutes() };
+}
 export function parseTime(timeString: string) {
   const [hours, minutes] = timeString.match(/\d+/g).map(Number);
   return { hours, minutes };

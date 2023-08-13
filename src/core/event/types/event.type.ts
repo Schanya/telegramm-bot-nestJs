@@ -1,1 +1,1 @@
-type EventType = 'weather' | 'attractions';
+export type EventType = 'weather' | 'attractions';

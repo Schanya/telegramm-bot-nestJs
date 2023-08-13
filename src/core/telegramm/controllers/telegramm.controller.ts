@@ -5,7 +5,7 @@ import { Context } from '../interfaces/context.interface';
 import { SceneEnum } from '../enums/scene.enum';
 
 @Update()
-export class TelegrammService {
+export class TelegrammController {
   constructor() {}
 
   @Start()
