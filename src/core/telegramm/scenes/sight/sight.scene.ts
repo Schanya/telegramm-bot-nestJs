@@ -1,9 +1,9 @@
 import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { sightButtons } from '../buttons/sight/start.button';
-import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from './enums/scene.enum';
-import { axiosDownload } from './utils/httpRequest';
+import { sightButtons } from './buttons/start.button';
+import { Context } from '../../interfaces/context.interface';
+import { SceneEnum } from '../../enums/scene.enum';
+import { axiosDownload } from '../utils/httpRequest';
 import {
   AddressDto,
   PointDto,
@@ -11,17 +11,17 @@ import {
   SightRequestParamsDto,
   SigthXidsDto,
 } from './dto/sight.dto';
-import { sightTypeButtons } from '../buttons/sight/sight-type.button';
+import { sightTypeButtons } from './buttons/sight-type.button';
 import { SightType } from './types/sight.type';
-import { SIGHT_TYPE } from './сonstants/sight.constants';
+import { SIGHT_TYPE } from './enums/sight-type.constants';
 import { callbackQuery } from 'telegraf/filters';
-import { SightPhrases } from './enums/phrases/sight.phrases';
+import { SightPhrases } from './enums/sight.phrases';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { actionButtons } from '../buttons/actions.button';
+import { actionButtons } from '../../buttons/actions.button';
 import { sight } from 'env';
 
 @Scene(SceneEnum.sightScene)
-export class SightService {
+export class SightScene {
   constructor() {}
 
   @SceneEnter()

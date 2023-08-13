@@ -1,11 +1,11 @@
 import { Ctx, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { callbackQuery } from 'telegraf/filters';
-import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from './enums/scene.enum';
-import { formatDate } from './utils/date-methods';
+import { Context } from '../../interfaces/context.interface';
+import { SceneEnum } from '../../enums/scene.enum';
+import { formatDate } from '../utils/date-methods';
 
 @Scene(SceneEnum.dateScene)
-export class DateService {
+export class DateScene {
   @SceneEnter()
   async startCalendar(@Ctx() ctx: Context) {
     ctx.session.__scenes.state.previousScene = ctx.state.previousScene;

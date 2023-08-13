@@ -1,20 +1,20 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TelegrammService } from './controllers/telegramm.controller';
 import { AppModule } from 'src/app.module';
-import { CatService } from './services/cat.service';
-import { DogService } from './services/dog.service';
-import { HelpService } from './services/help.service';
-import { WeatherService } from './services/weather.service';
+import { CatScene } from './scenes/cat/cat.scene';
+import { DogScene } from './scenes/dog/dog.scene';
+import { HelpScene } from './scenes/help/help.scene';
+import { WeatherScene } from './scenes/weather/weather.scene';
 import { UserModule } from 'src/core/user/user.module';
 import { CityModule } from 'src/core/city/city.module';
 import { EventModule } from '../event/event.module';
-import { NotificationService } from './services/schedule.service';
+import { NotificationScene } from './scenes/notification/notification.scene';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TimeService } from './services/time.service';
-import { SightService } from './services/sight.service';
+import { TimeScene } from './scenes/time/time.scene';
+import { SightScene } from './scenes/sight/sight.scene';
 import { TaskModule } from '../task/task.module';
-import { TaskService } from './services/task.service';
-import { DateService } from './services/date.service';
+import { TaskScene } from './scenes/task/task.scene';
+import { DateScene } from './scenes/date/date.scene';
 
 @Module({
   imports: [
@@ -27,27 +27,27 @@ import { DateService } from './services/date.service';
   controllers: [],
   providers: [
     TelegrammService,
-    CatService,
-    DogService,
-    HelpService,
-    WeatherService,
-    NotificationService,
-    TimeService,
-    SightService,
-    TaskService,
-    DateService,
+    CatScene,
+    DogScene,
+    HelpScene,
+    WeatherScene,
+    NotificationScene,
+    TimeScene,
+    SightScene,
+    TaskScene,
+    DateScene,
   ],
   exports: [
     TelegrammService,
-    CatService,
-    DogService,
-    HelpService,
-    WeatherService,
-    NotificationService,
-    TimeService,
-    SightService,
-    TaskService,
-    DateService,
+    CatScene,
+    DogScene,
+    HelpScene,
+    WeatherScene,
+    NotificationScene,
+    TimeScene,
+    SightScene,
+    TaskScene,
+    DateScene,
   ],
 })
 export class TelegrammModule {}

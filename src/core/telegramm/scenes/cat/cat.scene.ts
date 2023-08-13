@@ -1,12 +1,12 @@
 import { InjectBot, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
-import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from './enums/scene.enum';
-import { axiosDownload } from './utils/httpRequest';
+import { Context } from '../../interfaces/context.interface';
+import { SceneEnum } from '../../enums/scene.enum';
+import { axiosDownload } from '../utils/httpRequest';
 import { cat } from 'env';
 
 @Scene(SceneEnum.catScene)
-export class CatService {
+export class CatScene {
   constructor(@InjectBot() private readonly bot: Telegraf<Context>) {}
 
   @SceneEnter()

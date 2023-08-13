@@ -1,4 +1,4 @@
-import { SightInfoDto } from '../../dto/sight.dto';
+import { SightInfoDto } from '../dto/sight.dto';
 
 export const SightPhrases = {
   start: `Какие достопримечательности хотите найти?`,

@@ -1,4 +1,4 @@
-import { TaskContextStepEnum } from '../services/enums/task-context-step.enum';
+import { TaskContextStepEnum } from '../scenes/task/enums/task-context-step.enum';
 
 export type ContextData =
   | 'weather'
