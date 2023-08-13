@@ -11,6 +11,7 @@ export class NotificationScene {
     time: Date,
     task: (params: Map<T, T>) => Promise<void>,
     params: Map<T, T>,
+    isEveryDay: boolean,
   ) {
     const cronTime = `0 ${time.getMinutes()} ${time.getHours()} * * *`;
 
@@ -20,7 +21,7 @@ export class NotificationScene {
 
     this.schedulerRegistry.addCronJob(name, job);
     job.start();
-    this.getCrons();
+    // this.getCrons();
   }
 
   getCrons() {

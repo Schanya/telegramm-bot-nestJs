@@ -1,9 +1,11 @@
 import { SceneContext } from 'telegraf/typings/scenes';
-import { MySceneSession } from './session.interface';
 import { SceneEnum } from '../enums/scene.enum';
-import { EventType } from 'src/core/event/types/event.type';
+import { ContextData } from '../types/context.type';
+import { MySceneSession } from './session.interface';
 
 export interface Context extends SceneContext<MySceneSession> {
+  ctx: {};
+  step: ContextData;
   state: {
     previousScene: SceneEnum;
     previousSceneData: string;

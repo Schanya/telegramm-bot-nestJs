@@ -10,6 +10,7 @@ export class DateScene {
   async startCalendar(@Ctx() ctx: Context) {
     ctx.session.__scenes.state.previousScene = ctx.state.previousScene;
     ctx.session.__scenes.state.previousSceneData = ctx.state.previousSceneData;
+    ctx.session.__scenes.step = ctx.step;
 
     this.viewCal(new Date().getFullYear(), new Date().getMonth(), ctx);
   }
@@ -30,6 +31,8 @@ export class DateScene {
           );
           previousSceneData.date = date;
           ctx.state.previousSceneData = JSON.stringify(previousSceneData);
+
+          ctx.step = ctx.session.__scenes.step;
 
           const previousScene = ctx.session.__scenes.state.previousScene;
           ctx.scene.enter(previousScene);

@@ -32,6 +32,9 @@ export class Task extends Model<Task, TaskCreationAttrs> {
   @Column({ type: DataType.DATE, allowNull: false })
   time: Date;
 
+  @Column({ type: DataType.BOOLEAN, allowNull: false })
+  notification: Boolean;
+
   @BelongsTo(() => User, 'user_id')
   user: User;
 }

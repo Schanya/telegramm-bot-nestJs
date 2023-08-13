@@ -4,6 +4,7 @@ import { Task } from './task.model';
 import { TaskOptions } from './dto/find-task.options';
 import { ReadAllTaskDto } from './dto/read-all-tasks.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TaskService {
@@ -39,6 +40,12 @@ export class TaskService {
     const createdTask = await this.taskRepository.create(createTaskDto);
 
     return createdTask;
+  }
+
+  public async update(updateTaskDto: UpdateTaskDto) {
+    await this.taskRepository.update(updateTaskDto, {
+      where: { id: updateTaskDto.id },
+    });
   }
 
   public async delete(id: number): Promise<void> {

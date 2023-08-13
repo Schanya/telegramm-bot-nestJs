@@ -1,5 +1,6 @@
 export enum TaskContextStepEnum {
   title = 'title',
   description = 'description',
-  date = 'date',
+  save = 'save',
+  addNotification = 'addNotification',
 }

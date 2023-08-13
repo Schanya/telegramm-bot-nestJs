@@ -6,3 +6,31 @@ export function formatDate(dateStr: string): Date {
 
   return date;
 }
+
+export function compareDateWithCurrent(date: Date) {
+  const currentDate = new Date();
+
+  const currentDateObj = {
+    day: currentDate.getDay(),
+    month: currentDate.getMonth(),
+    yaer: currentDate.getFullYear(),
+    hours: currentDate.getHours(),
+    minutes: currentDate.getMinutes(),
+  };
+
+  const notificationDateObj = {
+    day: date.getDay(),
+    month: date.getMonth(),
+    yaer: date.getFullYear(),
+    hours: date.getHours(),
+    minutes: date.getMinutes(),
+  };
+
+  return (
+    currentDateObj.day == notificationDateObj.day &&
+    currentDateObj.month == notificationDateObj.month &&
+    currentDateObj.yaer == notificationDateObj.yaer &&
+    currentDateObj.hours <= notificationDateObj.hours &&
+    currentDateObj.minutes <= notificationDateObj.minutes
+  );
+}

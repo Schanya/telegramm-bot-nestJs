@@ -19,6 +19,7 @@ export class TimeScene {
   async startTimeScene(@Ctx() ctx: Context) {
     ctx.session.__scenes.state.previousScene = ctx.state.previousScene;
     ctx.session.__scenes.state.previousSceneData = ctx.state.previousSceneData;
+    ctx.session.__scenes.step = ctx.step;
 
     const currentDate = new Date();
     const initialTime = {
@@ -91,6 +92,7 @@ export class TimeScene {
       previousSceneData.time = currentTime;
 
       ctx.state.previousSceneData = JSON.stringify(previousSceneData);
+      ctx.step = ctx.session.__scenes.step;
 
       const previousScene = ctx.session.__scenes.state.previousScene;
 
