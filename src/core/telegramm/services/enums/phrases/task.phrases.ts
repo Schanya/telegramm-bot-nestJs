@@ -11,6 +11,6 @@ export const TaskPhrases = {
   },
   enterTaskTitle: `Введите название задачи`,
   enterTaskDescription: 'Введите описание задачи',
-  enterTaskDate: 'Ввыберите дату выполнения задачи в формате день:месяц:год',
-  wrongTaskDateFormat: 'Дата введена не правильно, повторите ввод',
+  enterTaskDate: 'Выберите дату выполнения задачи',
+  whichTaskRemove: 'Какую задачу вы хотите удалить?',
 };

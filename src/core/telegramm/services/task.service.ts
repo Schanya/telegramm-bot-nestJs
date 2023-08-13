@@ -3,17 +3,21 @@ import { Markup } from 'telegraf';
 import { Context } from '../interfaces/context.interface';
 import { SceneEnum } from './enums/scene.enum';
 
-import { TaskPhrases } from './enums/phrases/task.phrases';
 import { taskActionButtons } from '../buttons/task/task-action.button';
+import { TaskPhrases } from './enums/phrases/task.phrases';
 
-import { TaskService as Service } from '../../task/task.service';
-import { UserService } from 'src/core/user/user.service';
-import { formatTasks } from './utils/task-methods';
-import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { actionButtons } from '../buttons/actions.button';
 import { ReadAllTaskDto } from 'src/core/task/dto/read-all-tasks.dto';
+import { Task } from 'src/core/task/task.model';
+import { UserService } from 'src/core/user/user.service';
+import { callbackQuery } from 'telegraf/filters';
+import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
+import { TaskService as Service } from '../../task/task.service';
+import { actionButtons } from '../buttons/actions.button';
+import { tasksListButtons } from '../buttons/task/task-list.button';
 import { CreateTaskParams } from './dto/task.dto';
 import { TaskContextStepEnum } from './enums/task-context-step.enum';
+import { formatTasks } from './utils/task-methods';
+import { TaskActionEnum } from './enums/task-action.enum';
 
 @Scene(SceneEnum.taskScene)
 export class TaskService {
@@ -38,12 +42,12 @@ export class TaskService {
     }
 
     const telegrammID = message?.from.id || ctx.chat.id;
-    const tasks = await this.getUsersTasks(telegrammID);
+    const tasks = formatTasks(await this.getUsersTasks(telegrammID));
 
     await ctx.sendMessage(TaskPhrases.start(tasks), taskActionButtons());
   }
 
-  @Action('/addTask')
+  @Action(TaskActionEnum.addTask)
   async addTaskAction(@Ctx() ctx: Context) {
     await ctx.answerCbQuery();
     await ctx.sendMessage(TaskPhrases.enterTaskTitle, Markup.removeKeyboard());
@@ -52,10 +56,28 @@ export class TaskService {
     ctx.session.__scenes.step = TaskContextStepEnum.title;
   }
 
-  @Action('/menu')
+  @Action(TaskActionEnum.deleteTask)
+  async deleteTaskAction(@Ctx() ctx: Context) {
+    const telegrammID = ctx.chat.id;
+    const tasks = await this.getUsersTasks(telegrammID);
+
+    await ctx.sendMessage(TaskPhrases.whichTaskRemove, tasksListButtons(tasks));
+  }
+
+  @Action(TaskActionEnum.menu)
   async menu(@Ctx() ctx: Context) {
     await ctx.sendMessage('Главное меню', actionButtons());
-    ctx.scene.leave();
+    await ctx.scene.leave();
+  }
+
+  @Action(/\d+/)
+  async deleteTask(@Ctx() ctx: Context) {
+    if (ctx.has(callbackQuery('data'))) {
+      const taskId = Number(ctx.callbackQuery.data);
+
+      await this.taskService.delete(taskId);
+      await ctx.scene.reenter();
+    }
   }
 
   @On('text')
@@ -96,7 +118,7 @@ export class TaskService {
     ctx.state.previousScene = SceneEnum.taskScene;
     ctx.state.previousSceneData = JSON.stringify(task);
 
-    ctx.scene.enter(SceneEnum.dateScene);
+    await ctx.scene.enter(SceneEnum.dateScene);
   }
 
   private async saveTaskAndExit(@Ctx() ctx: Context) {
@@ -109,16 +131,16 @@ export class TaskService {
     await user.$add('task', task);
 
     delete ctx.state.previousSceneData;
-    ctx.scene.reenter();
+    await ctx.scene.reenter();
   }
 
-  private async getUsersTasks(telegrammID: number): Promise<string[]> {
+  private async getUsersTasks(telegrammID: number): Promise<Task[]> {
     const user = await this.userService.findBy({ telegrammID });
 
-    let tasks: string[] = [];
+    let tasks: Task[] = [];
 
     if (user) {
-      tasks = formatTasks(await user.$get('tasks'));
+      tasks = await user.$get('tasks');
     }
 
     return tasks;
