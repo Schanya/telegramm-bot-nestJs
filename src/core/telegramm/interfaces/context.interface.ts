@@ -6,7 +6,7 @@ export interface Context extends SceneContext<MySceneSession> {
   state: {
     city: string;
     evenType: EventType;
-    preventScene: SceneEnum;
-    preventSceneData: string;
+    previousScene: SceneEnum;
+    previousSceneData: string;
   };
 }

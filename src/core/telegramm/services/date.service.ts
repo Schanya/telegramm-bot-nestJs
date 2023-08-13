@@ -1,14 +1,15 @@
 import { Ctx, On, Scene, SceneEnter } from 'nestjs-telegraf';
-import { SceneEnum } from './enums/scene.enum';
-import { Context } from '../interfaces/context.interface';
 import { callbackQuery } from 'telegraf/filters';
+import { Context } from '../interfaces/context.interface';
+import { SceneEnum } from './enums/scene.enum';
+import { formatDate } from './utils/date-methods';
 
 @Scene(SceneEnum.dateScene)
 export class DateService {
   @SceneEnter()
   async startCalendar(@Ctx() ctx: Context) {
-    ctx.session.__scenes.state.preventScene = ctx.state.preventScene;
-    ctx.session.__scenes.state.preventSceneData = ctx.state.preventSceneData;
+    ctx.session.__scenes.state.previousScene = ctx.state.previousScene;
+    ctx.session.__scenes.state.previousSceneData = ctx.state.previousSceneData;
 
     this.viewCal(new Date().getFullYear(), new Date().getMonth(), ctx);
   }
@@ -17,18 +18,21 @@ export class DateService {
   async handleCalendarAction(@Ctx() ctx: Context) {
     if (ctx.has(callbackQuery('data'))) {
       const params = ctx.callbackQuery.data.split('_');
-      const chatId = ctx.chat.id;
 
       switch (params[0]) {
         case 'info': {
           params.shift();
 
-          ctx.state.city = params.join('-');
-          ctx.state.preventSceneData =
-            ctx.session.__scenes.state.preventSceneData;
+          const date = formatDate(params.join('-'));
 
-          const preventScene = ctx.session.__scenes.state.preventScene;
-          ctx.scene.enter(preventScene);
+          const previousSceneData = JSON.parse(
+            ctx.session.__scenes.state.previousSceneData,
+          );
+          previousSceneData.date = date;
+          ctx.state.previousSceneData = JSON.stringify(previousSceneData);
+
+          const previousScene = ctx.session.__scenes.state.previousScene;
+          ctx.scene.enter(previousScene);
           break;
         }
 
@@ -138,11 +142,6 @@ export class DateService {
     return days;
   }
 
-  /**
-   * Переопределим номер дня недели
-   * @param date
-   * @return int
-   */
   getNumDayOfWeek(date): number {
     let day = date.getDay();
 

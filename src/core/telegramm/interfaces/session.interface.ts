@@ -5,13 +5,13 @@ import { ReadAllTaskDto } from 'src/core/task/dto/read-all-tasks.dto';
 import { SceneEnum } from '../services/enums/scene.enum';
 
 export interface MySceneSession extends SceneSessionData {
-  type: ContextData;
+  step: ContextData;
   state: {
     city: string;
     evenType: EventType;
     sightType: SightType;
     task: ReadAllTaskDto;
-    preventScene: SceneEnum;
-    preventSceneData: string;
+    previousScene: SceneEnum;
+    previousSceneData: string;
   };
 }

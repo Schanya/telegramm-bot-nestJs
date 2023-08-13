@@ -69,7 +69,7 @@ export class WeatherService implements OnModuleInit {
   async cityAction(@Ctx() ctx: Context) {
     await ctx.answerCbQuery();
     await ctx.sendMessage(WeatherPhrases.getWeather);
-    ctx.session.__scenes.type = 'weather';
+    ctx.session.__scenes.step = 'weather';
   }
 
   @Action('/subscription')
@@ -77,7 +77,7 @@ export class WeatherService implements OnModuleInit {
     await ctx.answerCbQuery();
     await ctx.sendMessage(WeatherPhrases.getSubscription);
 
-    ctx.session.__scenes.type = 'subscription';
+    ctx.session.__scenes.step = 'subscription';
   }
 
   @Action('/unsubscribe')
@@ -147,7 +147,7 @@ export class WeatherService implements OnModuleInit {
     @Message() message: MessageType.TextMessage,
   ) {
     try {
-      if (!ctx.session.__scenes.type) {
+      if (!ctx.session.__scenes.step) {
         throw new BadRequestException(WeatherPhrases.undefinedActionType);
       }
 
@@ -157,7 +157,7 @@ export class WeatherService implements OnModuleInit {
         messageText,
       );
 
-      switch (ctx.session.__scenes.type) {
+      switch (ctx.session.__scenes.step) {
         case 'weather': {
           await ctx.sendMessage(
             WeatherPhrases.getWeatherInfo(description, temperature),

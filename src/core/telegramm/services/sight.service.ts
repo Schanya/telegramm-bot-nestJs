@@ -54,9 +54,9 @@ export class SightService {
           reply_markup: { remove_keyboard: true },
         });
 
-        ctx.session.__scenes.type = 'sightCity';
+        ctx.session.__scenes.step = 'sightCity';
       } else {
-        if (ctx.session.__scenes.type != 'sightCity') {
+        if (ctx.session.__scenes.step != 'sightCity') {
           throw new BadRequestException(SightPhrases.undefinedActionType);
         }
 
