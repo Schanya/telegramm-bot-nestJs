@@ -9,18 +9,7 @@ import { telegramm } from 'env';
 import { TaskModule } from './task/task.module';
 
 @Module({
-  imports: [
-    TelegrafModule.forRoot({
-      token: telegramm.token,
-      middlewares: [sessionMiddleware],
-      include: [TelegrammModule],
-    }),
-    UserModule,
-    CityModule,
-    TelegrammModule,
-    EventModule,
-    TaskModule,
-  ],
+  imports: [UserModule, CityModule, TelegrammModule, EventModule, TaskModule],
   controllers: [],
   providers: [],
   exports: [],

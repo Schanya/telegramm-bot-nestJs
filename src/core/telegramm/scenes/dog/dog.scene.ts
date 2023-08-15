@@ -11,8 +11,12 @@ export class DogScene {
 
   @SceneEnter()
   async getDogImage(ctx: Context) {
-    const { data } = await axiosDownload(dog.url);
+    try {
+      const { data } = await axiosDownload(dog.url);
 
-    await this.bot.telegram.sendPhoto(ctx.message.chat.id, data.url);
+      await this.bot.telegram.sendPhoto(ctx.message.chat.id, data.url);
+    } catch (error) {
+      await ctx.sendMessage('Упс, что-то не так, повторите запрос');
+    }
   }
 }
