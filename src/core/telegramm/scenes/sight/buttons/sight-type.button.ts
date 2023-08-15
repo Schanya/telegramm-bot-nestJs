@@ -10,6 +10,8 @@ export function sightTypeButtons() {
     }
   }
 
+  buttons.push(Markup.button.callback('Меню', '/menu'));
+
   return Markup.inlineKeyboard(buttons, {
     columns: Math.floor(buttons.length / 3),
   });
