@@ -26,11 +26,17 @@ export function compareDateWithCurrent(date: Date) {
     minutes: date.getMinutes(),
   };
 
-  return (
+  if (
     currentDateObj.day == notificationDateObj.day &&
     currentDateObj.month == notificationDateObj.month &&
-    currentDateObj.yaer == notificationDateObj.yaer &&
-    currentDateObj.hours <= notificationDateObj.hours &&
-    currentDateObj.minutes <= notificationDateObj.minutes
-  );
+    currentDateObj.yaer == notificationDateObj.yaer
+  ) {
+    if (currentDateObj.hours == notificationDateObj.hours) {
+      return currentDateObj.minutes <= notificationDateObj.minutes;
+    } else if (currentDateObj.hours <= notificationDateObj.hours) {
+      return true;
+    }
+  }
+
+  return false;
 }

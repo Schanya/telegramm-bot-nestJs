@@ -18,6 +18,7 @@ export class DateScene {
   @On('callback_query')
   async handleCalendarAction(@Ctx() ctx: Context) {
     if (ctx.has(callbackQuery('data'))) {
+      await ctx.answerCbQuery();
       const params = ctx.callbackQuery.data.split('_');
 
       switch (params[0]) {

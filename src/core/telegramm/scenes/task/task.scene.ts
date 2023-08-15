@@ -132,6 +132,8 @@ export class TaskScene implements OnModuleInit {
 
   @Action(TaskActionEnum.addNotification)
   async addNotification(@Ctx() ctx: Context) {
+    await ctx.answerCbQuery();
+
     ctx.state.previousScene = SceneEnum.taskScene;
     ctx.state.previousSceneData = JSON.stringify(
       ctx.session.__scenes.state.task,
@@ -144,6 +146,8 @@ export class TaskScene implements OnModuleInit {
 
   @Action(TaskActionEnum.noNotification)
   async noNatification(@Ctx() ctx: Context) {
+    await ctx.answerCbQuery();
+
     await ctx.scene.reenter();
   }
 
