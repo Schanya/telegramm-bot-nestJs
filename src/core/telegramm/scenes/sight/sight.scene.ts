@@ -1,31 +1,46 @@
-import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
-import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { sightButtons } from './buttons/start.button';
-import { Context } from '../../interfaces/context.interface';
-import { SceneEnum } from '../../enums/scene.enum';
-import { axiosDownload } from '../utils/httpRequest';
-import {
-  AddressDto,
-  PointDto,
-  SightInfoDto,
-  SightRequestParamsDto,
-  SigthXidsDto,
-} from './dto/sight.dto';
-import { sightTypeButtons } from './buttons/sight-type.button';
-import { SightType } from './types/sight.type';
-import { SIGHT_TYPE } from './enums/sight-type.constants';
-import { callbackQuery } from 'telegraf/filters';
-import { SightPhrases } from './enums/sight.phrases';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { actionButtons } from '../../buttons/actions.button';
 import { sight } from 'env';
+import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
+import { callbackQuery } from 'telegraf/filters';
+import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
+import { actionButtons } from '../../buttons/actions.button';
+import { SceneEnum } from '../../enums/scene.enum';
+import { SightsNotFoundExeption } from '../../errors';
+import { Context } from '../../interfaces/context.interface';
+import { formatAddress, formatSightsInfo } from '../utils';
+import { axiosDownload } from '../utils/httpRequest';
+import { sightTypeButtons } from './buttons/sight-type.button';
+import { sightButtons } from './buttons/start.button';
+import {
+  CityGeoData,
+  CreateSightParams,
+  SightRequestParams,
+  SigthXidsDto,
+} from './dto';
+import { SightContextStepEnum } from './enums/sight-context-step.enum';
+import {
+  DEFAULT_REQUEST_PARAMS,
+  GEONAME_URL,
+  RADIUS_URL,
+  XID_URL,
+} from './enums/sight-request-params.constants';
+import { SIGHT_TYPE } from './enums/sight-type.constants';
+import { SightPhrases } from './enums/sight.phrases';
+import { SightType } from './types/sight.type';
+import { SightActionEnum } from './enums/sight-action.enum';
 
 @Scene(SceneEnum.sightScene)
 export class SightScene {
   constructor() {}
 
+  private stepHandlers = {
+    cityNearby: this.handleCityInput,
+    cityName: this.handleCityNameInput,
+  };
+
   @SceneEnter()
   async startSightScene(@Ctx() ctx: Context) {
+    ctx.session.__scenes.state.sight = {};
     await ctx.sendMessage(SightPhrases.start, sightTypeButtons());
   }
 
@@ -34,144 +49,182 @@ export class SightScene {
     if (ctx.has(callbackQuery('data'))) {
       await ctx.answerCbQuery();
 
-      ctx.session.__scenes.state.sightType = ctx.callbackQuery
+      ctx.session.__scenes.state.sight.type = ctx.callbackQuery
         .data as SightType;
 
       await ctx.sendMessage(SightPhrases.placeQuestion, sightButtons());
     }
   }
 
-  @On('text')
-  async getSightCity(
-    @Ctx() ctx: Context,
-    @Message() message: MessageType.TextMessage,
-  ) {
-    try {
-      const kinds = ctx.session.__scenes.state.sightType;
-      const cityName = message.text;
-      if (cityName == 'В указанном городе') {
-        ctx.sendMessage(SightPhrases.enterCityName, {
-          reply_markup: { remove_keyboard: true },
-        });
-
-        ctx.session.__scenes.step = 'sightCity';
-      } else {
-        if (ctx.session.__scenes.step != 'sightCity') {
-          throw new BadRequestException(SightPhrases.undefinedActionType);
-        }
-
-        const cityParams: SightRequestParamsDto = { name: cityName };
-
-        const { data: cityData } = await this.getSight(
-          sight.url + '/geoname',
-          cityParams,
-        );
-
-        if (cityData?.error) {
-          throw new NotFoundException(SightPhrases.notFoundCity);
-        }
-
-        const { lat, lon } = cityData;
-        const params: SightRequestParamsDto = { lat, lon, kinds, limit: 3 };
-
-        const { data } = await this.getSight(sight.url + '/radius', params);
-        const sights: SigthXidsDto[] = data.features;
-
-        if (!sights.length) {
-          await ctx.scene.reenter();
-          throw new NotFoundException(SightPhrases.notFoundSight);
-        }
-
-        const sightInfoPromises = sights.map((sight) =>
-          this.getSightInfo(sight.properties.xid),
-        );
-        const answerd = await Promise.all(sightInfoPromises);
-
-        const formattedResponse = this.formatSightInfo(answerd);
-
-        ctx.sendMessage(formattedResponse, actionButtons());
-        await ctx.scene.leave();
-      }
-    } catch (error) {
-      ctx.sendMessage(SightPhrases.sendError + error.message);
-    }
+  @Action(SightActionEnum.menu)
+  async menuAction(@Ctx() ctx: Context) {
+    await ctx.answerCbQuery();
+    await ctx.sendMessage(SightPhrases.menu, actionButtons());
+    await ctx.scene.leave();
   }
 
-  @On('location')
+  @On(SightActionEnum.location)
   async getSightNearby(
     @Ctx() ctx: Context,
     @Message() message: MessageType.LocationMessage,
   ) {
     try {
-      const kinds = ctx.session.__scenes.state.sightType;
+      const kinds = ctx.session.__scenes.state.sight.type;
 
       if (!kinds) {
         throw new BadRequestException(SightPhrases.undefinedSightType);
       }
 
       const { latitude: lat, longitude: lon } = message.location;
+      const sightRequestParams: SightRequestParams = { lat, lon, kinds };
 
-      const params: SightRequestParamsDto = { lat, lon, kinds };
+      const sightsXids = await this.getSights(sightRequestParams);
 
-      const { data } = await this.getSight(sight.url + '/radius', params);
-      const sights: SigthXidsDto[] = data.features;
-
-      if (!sights.length) {
-        await ctx.scene.reenter();
-        throw new NotFoundException(SightPhrases.notFoundSight);
-      }
-
-      const sightInfoPromises = sights.map((sight) =>
+      const sightInfoPromises = sightsXids.map((sight) =>
         this.getSightInfo(sight.properties.xid),
       );
       const answerd = await Promise.all(sightInfoPromises);
 
-      const formattedResponse = this.formatSightInfo(answerd);
+      const formattedResponse = formatSightsInfo(answerd);
 
-      ctx.sendMessage(formattedResponse, actionButtons());
+      await ctx.sendMessage(formattedResponse, actionButtons());
       await ctx.scene.leave();
     } catch (error) {
-      ctx.sendMessage(SightPhrases.sendError + error.message);
+      if (error?.name == 'SightsNotFoundExeption') {
+        ctx.session.__scenes.step = SightContextStepEnum.cityNearby;
+        await ctx.sendMessage(error.message, sightTypeButtons());
+      } else {
+        await ctx.sendMessage(error.message);
+      }
     }
   }
 
-  async getSightInfo(xid: string) {
-    const { data } = await this.getSight(
-      sight.url + `/xid/${xid}`,
-      new SightRequestParamsDto(),
+  @On(SightActionEnum.text)
+  async handleInput(
+    @Ctx() ctx: Context,
+    @Message() message: MessageType.TextMessage,
+  ) {
+    try {
+      if (!ctx.session.__scenes.step && message.text == 'В указанном городе') {
+        ctx.session.__scenes.step = SightContextStepEnum.cityNearby;
+      }
+
+      const step = ctx.session.__scenes.step;
+
+      if (!step) {
+        throw new BadRequestException(SightPhrases.undefinedActionType);
+      }
+
+      const handler = this.stepHandlers[step];
+      if (handler) {
+        await handler.call(this, ctx, message);
+      }
+    } catch (error) {
+      if (error?.name == 'SightsNotFoundExeption') {
+        ctx.session.__scenes.step = SightContextStepEnum.cityNearby;
+        await ctx.sendMessage(error.message, sightTypeButtons());
+      } else {
+        await ctx.sendMessage(error.message);
+      }
+    }
+  }
+
+  private async handleCityInput(@Ctx() ctx: Context) {
+    await ctx.sendMessage(SightPhrases.enterCityName, {
+      reply_markup: { remove_keyboard: true },
+    });
+
+    ctx.session.__scenes.step = SightContextStepEnum.cityName;
+  }
+
+  private async handleCityNameInput(
+    @Ctx() ctx: Context,
+    @Message() message: MessageType.TextMessage,
+  ) {
+    const cityName = message.text;
+    const cityGeoDataParams: SightRequestParams = { name: cityName };
+
+    const cityGeoData = await this.getCityGeoData(cityGeoDataParams);
+
+    if (cityGeoData.name !== cityName) {
+      await ctx.sendMessage(
+        SightPhrases.incorrectCityName(cityGeoData.name, cityName),
+      );
+    }
+
+    const { lat, lon } = cityGeoData;
+    const kinds = ctx.session.__scenes.state.sight.type;
+    const sightRequestParams: SightRequestParams = { lat, lon, kinds };
+
+    const sightsXids = await this.getSights(sightRequestParams);
+
+    const sightInfoPromises = sightsXids.map((sightXid) =>
+      this.getSightInfo(sightXid.properties.xid),
+    );
+    const response = await Promise.all(sightInfoPromises);
+    const formattedResponse = formatSightsInfo(response);
+
+    await ctx.sendMessage(formattedResponse, actionButtons());
+    await ctx.scene.leave();
+  }
+
+  private async getCityGeoData(
+    cityGeoDataParams: SightRequestParams,
+  ): Promise<CityGeoData> {
+    const { data: cityGeoData } = await this.sendSightApiRequest(
+      sight.url + GEONAME_URL,
+      cityGeoDataParams,
     );
 
-    const formattedAddress = this.formatAddress(data.address);
-    const formattedCoordinates = this.formatCoordinates(data.point);
-
-    return new SightInfoDto(data.name, formattedAddress, formattedCoordinates);
-  }
-
-  formatSightInfo(sightInfoList: SightInfoDto[]) {
-    return sightInfoList
-      .map((el) => SightPhrases.sendSightInfo(el))
-      .join('\n\n');
-  }
-
-  formatAddress(address: AddressDto) {
-    return `${address.road} ${address.house_number}`;
-  }
-
-  formatCoordinates(point: PointDto) {
-    return `${point.lon}\n${point.lat}`;
-  }
-
-  async getSight(url: string, params?: SightRequestParamsDto) {
-    try {
-      const response = await axiosDownload(url, {
-        ...params,
-        apikey: sight.key,
-        radius: 1000,
-      });
-
-      return response;
-    } catch (error) {
-      throw new BadRequestException(SightPhrases.cityNameMistake);
+    if (cityGeoData?.error) {
+      throw new NotFoundException(SightPhrases.notFoundCity);
     }
+
+    return cityGeoData;
+  }
+
+  private async getSights(
+    sightRequestParams: SightRequestParams,
+  ): Promise<SigthXidsDto[]> {
+    try {
+      const { data } = await this.sendSightApiRequest(
+        sight.url + RADIUS_URL,
+        sightRequestParams,
+      );
+      const sightsXids: SigthXidsDto[] = data.features;
+
+      if (!sightsXids.length) {
+        throw new SightsNotFoundExeption(SightPhrases.notFoundSight);
+      }
+
+      return sightsXids;
+    } catch (error) {
+      throw new SightsNotFoundExeption(SightPhrases.notFoundSight);
+    }
+  }
+
+  private async getSightInfo(xid: string): Promise<CreateSightParams> {
+    const { data: sightData } = await this.sendSightApiRequest(
+      sight.url + `${XID_URL}/${xid}`,
+    );
+
+    const formattedAddress = formatAddress(sightData.address);
+    const sightInfo: CreateSightParams = {
+      address: formattedAddress,
+      name: sightData.name,
+    };
+
+    return sightInfo;
+  }
+
+  async sendSightApiRequest(url: string, params?: SightRequestParams) {
+    const response = await axiosDownload(url, {
+      ...params,
+      apikey: sight.key,
+      radius: DEFAULT_REQUEST_PARAMS.radius,
+      limit: 3,
+    });
+
+    return response;
   }
 }
