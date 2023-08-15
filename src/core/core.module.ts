@@ -6,6 +6,7 @@ import { sessionMiddleware } from './telegramm/middleware/session.middleware';
 import { TelegrammModule } from './telegramm/telegramm.module';
 import { UserModule } from './user/user.module';
 import { telegramm } from 'env';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { telegramm } from 'env';
     CityModule,
     TelegrammModule,
     EventModule,
+    TaskModule,
   ],
   controllers: [],
   providers: [],

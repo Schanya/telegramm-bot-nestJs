@@ -8,9 +8,10 @@ export function actionButtons() {
       Markup.button.callback('🐱 Cat', '/cat'),
       Markup.button.callback('🐶 Dog', '/dog'),
       Markup.button.callback('🔍 Sight', '/sight'),
+      Markup.button.callback('📋 Tasks', '/task'),
     ],
     {
-      columns: 2,
+      columns: 3,
     },
   );
 }

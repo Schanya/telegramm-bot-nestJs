@@ -2,10 +2,10 @@ import { Command, Ctx, Hears, Start, Update } from 'nestjs-telegraf';
 
 import { actionButtons } from '../buttons/actions.button';
 import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from '../services/enums/scene.enum';
+import { SceneEnum } from '../enums/scene.enum';
 
 @Update()
-export class TelegrammService {
+export class TelegrammController {
   constructor() {}
 
   @Start()
@@ -48,5 +48,14 @@ export class TelegrammService {
       reply_markup: { remove_keyboard: true },
     });
     ctx.scene.enter(SceneEnum.sightScene);
+  }
+
+  @Hears('📋 Tasks')
+  @Command('task')
+  async taskHears(@Ctx() ctx: Context) {
+    await ctx.sendMessage('Отлично', {
+      reply_markup: { remove_keyboard: true },
+    });
+    ctx.scene.enter(SceneEnum.taskScene);
   }
 }

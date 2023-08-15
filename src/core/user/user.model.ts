@@ -3,11 +3,13 @@ import {
   BelongsToMany,
   Column,
   DataType,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
 import { City } from '../city/city.model';
 import { Event } from '../event/event.model';
+import { Task } from '../task/task.model';
 
 export interface UserCreationAttrs {
   telegrammID: number;
@@ -35,4 +37,7 @@ export class User extends Model<User, UserCreationAttrs> {
 
   @BelongsToMany(() => Event, 'user_event', 'user_id', 'event_id')
   events: Event[];
+
+  @HasMany(() => Task, 'user_id')
+  tasks: Task[];
 }
