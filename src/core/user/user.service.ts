@@ -97,8 +97,9 @@ export class UserService {
       type: eventInfo.type,
     });
 
-    let res = await existingCity.$add('user', existingUser);
-    let temp = await event.$add('user', existingUser);
+    await existingCity.$add('user', existingUser);
+    await event.$add('user', existingUser);
+
     return {
       user: existingUser,
       city: existingCity,
