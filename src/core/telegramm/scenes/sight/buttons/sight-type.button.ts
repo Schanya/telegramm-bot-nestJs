@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf';
 import { SIGHT_TYPE } from '../enums/sight-type.constants';
+import { SightActionEnum } from '../enums/sight-action.enum';
 
 export function sightTypeButtons() {
   const buttons = [];
@@ -10,7 +11,7 @@ export function sightTypeButtons() {
     }
   }
 
-  buttons.push(Markup.button.callback('Меню', '/menu'));
+  buttons.push(Markup.button.callback('Меню', SightActionEnum.menu));
 
   return Markup.inlineKeyboard(buttons, {
     columns: Math.floor(buttons.length / 3),

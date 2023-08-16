@@ -79,7 +79,8 @@ export class TaskScene implements OnModuleInit {
     @Message() message: MessageType.TextMessage,
   ) {
     if (ctx.state?.previousSceneData) {
-      ctx.session.__scenes.state.task = {};
+      ctx.session.__scenes.state.sessionData = {};
+      ctx.session.__scenes.state.sessionData.task = {};
       ctx.session.__scenes.step = ctx.step;
 
       return await this.handleInput(ctx, message);
@@ -96,7 +97,8 @@ export class TaskScene implements OnModuleInit {
     await ctx.answerCbQuery();
     await ctx.sendMessage(TaskPhrases.enterTaskTitle, Markup.removeKeyboard());
 
-    ctx.session.__scenes.state.task = {};
+    ctx.session.__scenes.state.sessionData = {};
+    ctx.session.__scenes.state.sessionData.task = {};
     ctx.session.__scenes.step = TaskContextStepEnum.title;
   }
 
@@ -136,7 +138,7 @@ export class TaskScene implements OnModuleInit {
 
     ctx.state.previousScene = SceneEnum.taskScene;
     ctx.state.previousSceneData = JSON.stringify(
-      ctx.session.__scenes.state.task,
+      ctx.session.__scenes.state.sessionData.task,
     );
     ctx.step = TaskContextStepEnum.addNotification;
 
@@ -157,7 +159,7 @@ export class TaskScene implements OnModuleInit {
     @Message() message: MessageType.TextMessage,
   ) {
     const step = ctx.session.__scenes.step;
-    const task: CreateTaskParams = ctx.session.__scenes.state.task;
+    const task: CreateTaskParams = ctx.session.__scenes.state.sessionData.task;
 
     const handler = this.stepHandlers[step];
     if (handler) {
@@ -218,7 +220,7 @@ export class TaskScene implements OnModuleInit {
 
     await user.$add('task', createdTask);
 
-    ctx.session.__scenes.state.task.id = createdTask.id;
+    ctx.session.__scenes.state.sessionData.task.id = createdTask.id;
 
     await ctx.sendMessage(
       TaskPhrases.addNotificationQuestion,
