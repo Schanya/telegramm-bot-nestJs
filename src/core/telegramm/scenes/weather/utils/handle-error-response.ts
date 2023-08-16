@@ -17,6 +17,7 @@ export async function errorHandlerResponse(ctx: Context, error: any) {
     await ctx.scene.reenter();
   } else {
     await ctx.sendMessage(WeatherPhrases.sendError);
+    console.log(error);
   }
 
   return;
