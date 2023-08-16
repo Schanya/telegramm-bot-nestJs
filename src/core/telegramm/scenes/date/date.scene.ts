@@ -12,7 +12,7 @@ export class DateScene {
     ctx.session.__scenes.state.previousSceneData = ctx.state.previousSceneData;
     ctx.session.__scenes.step = ctx.step;
 
-    this.viewCal(new Date().getFullYear(), new Date().getMonth(), ctx);
+    await this.viewCal(new Date().getFullYear(), new Date().getMonth(), ctx);
   }
 
   @On('callback_query')
@@ -36,12 +36,12 @@ export class DateScene {
           ctx.step = ctx.session.__scenes.step;
 
           const previousScene = ctx.session.__scenes.state.previousScene;
-          ctx.scene.enter(previousScene);
+          await ctx.scene.enter(previousScene);
           break;
         }
 
         case 'cal': {
-          this.viewCal(Number(params[1]), Number(params[2]), ctx);
+          await this.viewCal(Number(params[1]), Number(params[2]), ctx);
           break;
         }
 
@@ -55,7 +55,7 @@ export class DateScene {
     return ('0' + num).slice(-2);
   }
 
-  viewCal(year: number, month: number, @Ctx() ctx: Context) {
+  async viewCal(year: number, month: number, @Ctx() ctx: Context) {
     let dayLines = this.getDays(year, month);
     let currentMonthDate = new Date(+year, +month);
 
@@ -109,9 +109,9 @@ export class DateScene {
     const messageId = ctx.callbackQuery?.message?.message_id;
 
     if (messageId) {
-      ctx.editMessageText('Календарь', data);
+      await ctx.editMessageText('Календарь', data);
     } else {
-      ctx.sendMessage('Календарь', data);
+      await ctx.sendMessage('Календарь', data);
     }
 
     return data;

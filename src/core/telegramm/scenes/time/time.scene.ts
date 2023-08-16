@@ -81,7 +81,7 @@ export class TimeScene {
         return;
     }
 
-    this.updateMessage(ctx, currentTime);
+    await this.updateMessage(ctx, currentTime);
   }
 
   async handleDoneAction(@Ctx() ctx: Context, currentTime: TimeDto) {
@@ -99,12 +99,12 @@ export class TimeScene {
       await ctx.scene.enter(previousScene);
       await ctx.scene.leave();
     } catch (error) {
-      ctx.sendMessage(error.message);
+      await ctx.sendMessage(error.message);
     }
   }
 
-  updateMessage(@Ctx() ctx: Context, currentTime: TimeDto) {
-    ctx
+  async updateMessage(@Ctx() ctx: Context, currentTime: TimeDto) {
+    await ctx
       .editMessageText(
         TimePhrases.currentTime(formatTime(currentTime)),
         timeButtons(),

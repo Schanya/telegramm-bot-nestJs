@@ -17,19 +17,19 @@ export class TelegrammController {
   @Hears('🆘 Help')
   @Command('help')
   async helpHears(@Ctx() ctx: Context) {
-    ctx.scene.enter(SceneEnum.helpScene);
+    await ctx.scene.enter(SceneEnum.helpScene);
   }
 
   @Hears('🐱 Cat')
   @Command('cat')
   async catHears(@Ctx() ctx: Context) {
-    ctx.scene.enter(SceneEnum.catScene);
+    await ctx.scene.enter(SceneEnum.catScene);
   }
 
   @Hears('🐶 Dog')
   @Command('dog')
   async dogHears(@Ctx() ctx: Context) {
-    ctx.scene.enter(SceneEnum.dogScene);
+    await ctx.scene.enter(SceneEnum.dogScene);
   }
 
   @Hears('🌤 Weather')
@@ -38,7 +38,7 @@ export class TelegrammController {
     await ctx.sendMessage('Отлично', {
       reply_markup: { remove_keyboard: true },
     });
-    ctx.scene.enter(SceneEnum.weatherScene);
+    await ctx.scene.enter(SceneEnum.weatherScene);
   }
 
   @Hears('🔍 Sight')
@@ -47,7 +47,7 @@ export class TelegrammController {
     await ctx.sendMessage('Отлично', {
       reply_markup: { remove_keyboard: true },
     });
-    ctx.scene.enter(SceneEnum.sightScene);
+    await ctx.scene.enter(SceneEnum.sightScene);
   }
 
   @Hears('📋 Tasks')
@@ -56,6 +56,6 @@ export class TelegrammController {
     await ctx.sendMessage('Отлично', {
       reply_markup: { remove_keyboard: true },
     });
-    ctx.scene.enter(SceneEnum.taskScene);
+    await ctx.scene.enter(SceneEnum.taskScene);
   }
 }
