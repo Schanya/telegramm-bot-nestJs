@@ -1,46 +1,55 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { sight } from 'env';
+
 import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { callbackQuery } from 'telegraf/filters';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { actionButtons } from '../../buttons/actions.button';
+
+import { HttpStatusCode } from 'axios';
+
 import { SceneEnum } from '../../enums/scene.enum';
 import { SightsNotFoundExeption } from '../../errors';
 import { Context } from '../../interfaces/context.interface';
-import { formatAddress, formatSightsInfo } from '../utils';
-import { axiosDownload } from '../utils/httpRequest';
-import { sightTypeButtons } from './buttons/sight-type.button';
-import { sightButtons } from './buttons/start.button';
+
+import { formatSightsInfo } from '../utils';
+import { SightType } from './types';
+
+import { actionButtons } from '../../buttons/actions.button';
 import {
-  CityGeoData,
-  CreateSightParams,
-  SightRequestParams,
-  SigthXidsDto,
-} from './dto';
-import { SightContextStepEnum } from './enums/sight-context-step.enum';
+  continueSightButtons,
+  sightButtons,
+  sightTypeButtons,
+} from './buttons';
+
+import { SightRequestParams } from './dto';
+
 import {
-  DEFAULT_REQUEST_PARAMS,
-  GEONAME_URL,
-  RADIUS_URL,
-  XID_URL,
-} from './enums/sight-request-params.constants';
-import { SIGHT_TYPE } from './enums/sight-type.constants';
-import { SightPhrases } from './enums/sight.phrases';
-import { SightType } from './types/sight.type';
-import { SightActionEnum } from './enums/sight-action.enum';
+  SIGHT_TYPE,
+  SightActionEnum,
+  SightContextStepEnum,
+  SightPhrases,
+} from './enums';
+
+import {
+  handleCityInput,
+  handleCityNameInput,
+  getSightInfo,
+  getSights,
+} from './utils';
 
 @Scene(SceneEnum.sightScene)
 export class SightScene {
   constructor() {}
 
   private stepHandlers = {
-    cityNearby: this.handleCityInput,
-    cityName: this.handleCityNameInput,
+    cityNearby: handleCityInput,
+    cityName: handleCityNameInput,
   };
 
   @SceneEnter()
   async startSightScene(@Ctx() ctx: Context) {
-    ctx.session.__scenes.state.sight = {};
+    ctx.session.__scenes.state.sessionData = {};
+    ctx.session.__scenes.state.sessionData.sight = {};
+
     await ctx.sendMessage(SightPhrases.start, sightTypeButtons());
   }
 
@@ -49,7 +58,7 @@ export class SightScene {
     if (ctx.has(callbackQuery('data'))) {
       await ctx.answerCbQuery();
 
-      ctx.session.__scenes.state.sight.type = ctx.callbackQuery
+      ctx.session.__scenes.state.sessionData.sight.type = ctx.callbackQuery
         .data as SightType;
 
       await ctx.sendMessage(SightPhrases.placeQuestion, sightButtons());
@@ -69,7 +78,7 @@ export class SightScene {
     @Message() message: MessageType.LocationMessage,
   ) {
     try {
-      const kinds = ctx.session.__scenes.state.sight.type;
+      const kinds = ctx.session.__scenes.state.sessionData.sight.type;
 
       if (!kinds) {
         throw new BadRequestException(SightPhrases.undefinedSightType);
@@ -78,24 +87,12 @@ export class SightScene {
       const { latitude: lat, longitude: lon } = message.location;
       const sightRequestParams: SightRequestParams = { lat, lon, kinds };
 
-      const sightsXids = await this.getSights(sightRequestParams);
+      const sightsXids = await getSights(sightRequestParams);
+      ctx.session.__scenes.state.sessionData.sightsXids = sightsXids;
 
-      const sightInfoPromises = sightsXids.map((sight) =>
-        this.getSightInfo(sight.properties.xid),
-      );
-      const answerd = await Promise.all(sightInfoPromises);
-
-      const formattedResponse = formatSightsInfo(answerd);
-
-      await ctx.sendMessage(formattedResponse, actionButtons());
-      await ctx.scene.leave();
+      await this.continueSightsInfo(ctx);
     } catch (error) {
-      if (error?.name == 'SightsNotFoundExeption') {
-        ctx.session.__scenes.step = SightContextStepEnum.cityNearby;
-        await ctx.sendMessage(error.message, sightTypeButtons());
-      } else {
-        await ctx.sendMessage(error.message);
-      }
+      await this.handleErrorResponse(ctx, error);
     }
   }
 
@@ -120,111 +117,64 @@ export class SightScene {
         await handler.call(this, ctx, message);
       }
     } catch (error) {
-      if (error?.name == 'SightsNotFoundExeption') {
-        ctx.session.__scenes.step = SightContextStepEnum.cityNearby;
-        await ctx.sendMessage(error.message, sightTypeButtons());
-      } else {
-        await ctx.sendMessage(error.message);
-      }
+      await this.handleErrorResponse(ctx, error);
     }
   }
 
-  private async handleCityInput(@Ctx() ctx: Context) {
-    await ctx.sendMessage(SightPhrases.enterCityName, {
-      reply_markup: { remove_keyboard: true },
-    });
-
-    ctx.session.__scenes.step = SightContextStepEnum.cityName;
-  }
-
-  private async handleCityNameInput(
-    @Ctx() ctx: Context,
-    @Message() message: MessageType.TextMessage,
-  ) {
-    const cityName = message.text;
-    const cityGeoDataParams: SightRequestParams = { name: cityName };
-
-    const cityGeoData = await this.getCityGeoData(cityGeoDataParams);
-
-    if (cityGeoData.name !== cityName) {
-      await ctx.sendMessage(
-        SightPhrases.incorrectCityName(cityGeoData.name, cityName),
-      );
-    }
-
-    const { lat, lon } = cityGeoData;
-    const kinds = ctx.session.__scenes.state.sight.type;
-    const sightRequestParams: SightRequestParams = { lat, lon, kinds };
-
-    const sightsXids = await this.getSights(sightRequestParams);
-
-    const sightInfoPromises = sightsXids.map((sightXid) =>
-      this.getSightInfo(sightXid.properties.xid),
-    );
-    const response = await Promise.all(sightInfoPromises);
-    const formattedResponse = formatSightsInfo(response);
-
-    await ctx.sendMessage(formattedResponse, actionButtons());
-    await ctx.scene.leave();
-  }
-
-  private async getCityGeoData(
-    cityGeoDataParams: SightRequestParams,
-  ): Promise<CityGeoData> {
-    const { data: cityGeoData } = await this.sendSightApiRequest(
-      sight.url + GEONAME_URL,
-      cityGeoDataParams,
-    );
-
-    if (cityGeoData?.error) {
-      throw new NotFoundException(SightPhrases.notFoundCity);
-    }
-
-    return cityGeoData;
-  }
-
-  private async getSights(
-    sightRequestParams: SightRequestParams,
-  ): Promise<SigthXidsDto[]> {
+  @Action(SightActionEnum.continue)
+  private async continueSightsInfo(@Ctx() ctx: Context) {
     try {
-      const { data } = await this.sendSightApiRequest(
-        sight.url + RADIUS_URL,
-        sightRequestParams,
-      );
-      const sightsXids: SigthXidsDto[] = data.features;
+      const sightsXids = ctx.session.__scenes.state.sessionData.sightsXids;
+      const chunk = sightsXids.splice(0, 5);
 
-      if (!sightsXids.length) {
+      const sightInfoPromises = chunk.map((sight) =>
+        getSightInfo(sight.properties.xid),
+      );
+      const answered = await Promise.all(sightInfoPromises);
+
+      const formattedResponse = formatSightsInfo(answered);
+
+      if (!formattedResponse.length) {
         throw new SightsNotFoundExeption(SightPhrases.notFoundSight);
       }
 
-      return sightsXids;
+      if (sightsXids.length === 0) {
+        await this.handleSceneCompletion(ctx, formattedResponse);
+        return;
+      }
+
+      if (ctx.has(callbackQuery('data'))) {
+        await ctx.editMessageText(formattedResponse, continueSightButtons());
+      } else {
+        await ctx.sendMessage(formattedResponse, continueSightButtons());
+      }
     } catch (error) {
-      throw new SightsNotFoundExeption(SightPhrases.notFoundSight);
+      await this.handleErrorResponse(ctx, error);
     }
   }
 
-  private async getSightInfo(xid: string): Promise<CreateSightParams> {
-    const { data: sightData } = await this.sendSightApiRequest(
-      sight.url + `${XID_URL}/${xid}`,
-    );
-
-    const formattedAddress = formatAddress(sightData.address);
-    const sightInfo: CreateSightParams = {
-      address: formattedAddress,
-      name: sightData.name,
-    };
-
-    return sightInfo;
+  private async handleSceneCompletion(ctx: Context, response: string) {
+    if (ctx.has(callbackQuery('data'))) {
+      await ctx.editMessageText(response);
+      await ctx.scene.reenter();
+    } else {
+      await ctx.sendMessage(response, actionButtons());
+      await ctx.scene.leave();
+    }
   }
 
-  async sendSightApiRequest(url: string, params?: SightRequestParams) {
-    const response = await axiosDownload(url, {
-      ...params,
-      apikey: sight.key,
-      radius: DEFAULT_REQUEST_PARAMS.radius,
-      limit: 3,
-    });
+  private async handleErrorResponse(ctx: Context, error: any) {
+    if (error.response?.status === HttpStatusCode.TooManyRequests) {
+      await ctx.sendMessage(SightPhrases.tooManyRequests);
+      return;
+    }
 
-    return response;
+    if (error instanceof NotFoundException) {
+      await ctx.sendMessage(error.message);
+      await ctx.scene.reenter();
+      return;
+    }
+
+    await ctx.sendMessage(SightPhrases.sendError);
   }
 }

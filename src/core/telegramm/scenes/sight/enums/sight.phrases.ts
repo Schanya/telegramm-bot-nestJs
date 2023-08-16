@@ -5,7 +5,7 @@ export const SightPhrases = {
   placeQuestion: `Где искать?`,
   undefinedSightType: `Вы не выбрали категорию, пожалуйста вернитесь и сделайти выбор`,
   notFoundSight: `В радиусе 1000 км нет такого типа достопримечательностей, попробуйте выбрать что-то другое`,
-  sendError: `Произошла ошибка: `,
+  sendError: `Произошла ошибка, повторите запрос позже`,
   sendSightInfo: (el: CreateSightParams) =>
     `Название: ${el.name}\nАдрес: ${el.address}`,
   enterCityName: `Введите название города`,
@@ -15,4 +15,5 @@ export const SightPhrases = {
   incorrectCityName: (rightName: string, wrongName: string) =>
     `Возможно вы имели ввиду ${rightName}, а не ${wrongName}`,
   menu: 'Главное меню',
+  tooManyRequests: 'Слишком много запросов, подождите и повторите запрос',
 };

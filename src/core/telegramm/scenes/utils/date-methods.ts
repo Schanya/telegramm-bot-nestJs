@@ -10,31 +10,19 @@ export function formatDate(dateStr: string): Date {
 export function compareDateWithCurrent(date: Date) {
   const currentDate = new Date();
 
-  const currentDateObj = {
-    day: currentDate.getDay(),
-    month: currentDate.getMonth(),
-    yaer: currentDate.getFullYear(),
-    hours: currentDate.getHours(),
-    minutes: currentDate.getMinutes(),
-  };
+  const sameDate =
+    currentDate.getDate() === date.getDate() &&
+    currentDate.getMonth() === date.getMonth() &&
+    currentDate.getFullYear() === date.getFullYear();
 
-  const notificationDateObj = {
-    day: date.getDay(),
-    month: date.getMonth(),
-    yaer: date.getFullYear(),
-    hours: date.getHours(),
-    minutes: date.getMinutes(),
-  };
+  if (sameDate) {
+    const currentHour = currentDate.getHours();
+    const notificationHour = date.getHours();
 
-  if (
-    currentDateObj.day == notificationDateObj.day &&
-    currentDateObj.month == notificationDateObj.month &&
-    currentDateObj.yaer == notificationDateObj.yaer
-  ) {
-    if (currentDateObj.hours == notificationDateObj.hours) {
-      return currentDateObj.minutes <= notificationDateObj.minutes;
-    } else if (currentDateObj.hours <= notificationDateObj.hours) {
+    if (currentHour < notificationHour) {
       return true;
+    } else if (currentHour === notificationHour) {
+      return currentDate.getMinutes() <= date.getMinutes();
     }
   }
 

@@ -79,6 +79,9 @@ export class WeatherScene implements OnModuleInit {
         );
       }
     }
+
+    console.log('weather module init notification');
+    this.notificationService.getCrons();
   }
 
   async handleCron(usersWeather: Map<number, WeatherDto>) {
@@ -101,7 +104,8 @@ export class WeatherScene implements OnModuleInit {
       return await this.saveWeatherAndExit(ctx);
     }
 
-    ctx.session.__scenes.state.weather = {};
+    ctx.session.__scenes.state.sessionData = {};
+    ctx.session.__scenes.state.sessionData.weather = {};
     await ctx.sendMessage(WeatherPhrases.start, weatherButtons());
   }
 
@@ -178,7 +182,7 @@ export class WeatherScene implements OnModuleInit {
     try {
       const step = ctx.session.__scenes.step;
       const weather: CreateWeatherNotificationParams =
-        ctx.session.__scenes.state.weather;
+        ctx.session.__scenes.state.sessionData.weather;
 
       const handler = this.stepHandlers[step];
       if (handler) {
