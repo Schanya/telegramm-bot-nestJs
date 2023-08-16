@@ -9,7 +9,7 @@ export const SightPhrases = {
   sendSightInfo: (el: CreateSightParams) =>
     `Название: ${el.name}\nАдрес: ${el.address}`,
   enterCityName: `Введите название города`,
-  undefinedActionType: `Сначала выберите действие`,
+  undefinedActionType: `Сначала выберите действие на клавиатуре`,
   notFoundCity: `Такой город не найден, повторите ввод`,
   cityNameMistake: `В названии города ошибка, пожалуйста попробуйте снова`,
   incorrectCityName: (rightName: string, wrongName: string) =>

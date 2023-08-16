@@ -1,13 +1,11 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 
 import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { callbackQuery } from 'telegraf/filters';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 
-import { HttpStatusCode } from 'axios';
-
 import { SceneEnum } from '../../enums/scene.enum';
-import { SightsNotFoundExeption } from '../../errors';
+import { ActionNotFoundExeption, SightsNotFoundExeption } from '../../errors';
 import { Context } from '../../interfaces/context.interface';
 
 import { formatSightsInfo } from '../utils';
@@ -30,10 +28,11 @@ import {
 } from './enums';
 
 import {
-  handleCityInput,
-  handleCityNameInput,
   getSightInfo,
   getSights,
+  handleCityInput,
+  handleCityNameInput,
+  handleErrorResponse,
 } from './utils';
 
 @Scene(SceneEnum.sightScene)
@@ -92,7 +91,7 @@ export class SightScene {
 
       await this.continueSightsInfo(ctx);
     } catch (error) {
-      await this.handleErrorResponse(ctx, error);
+      await handleErrorResponse(ctx, error);
     }
   }
 
@@ -109,7 +108,7 @@ export class SightScene {
       const step = ctx.session.__scenes.step;
 
       if (!step) {
-        throw new BadRequestException(SightPhrases.undefinedActionType);
+        throw new ActionNotFoundExeption(SightPhrases.undefinedActionType);
       }
 
       const handler = this.stepHandlers[step];
@@ -117,7 +116,7 @@ export class SightScene {
         await handler.call(this, ctx, message);
       }
     } catch (error) {
-      await this.handleErrorResponse(ctx, error);
+      await handleErrorResponse(ctx, error);
     }
   }
 
@@ -149,7 +148,7 @@ export class SightScene {
         await ctx.sendMessage(formattedResponse, continueSightButtons());
       }
     } catch (error) {
-      await this.handleErrorResponse(ctx, error);
+      await handleErrorResponse(ctx, error);
     }
   }
 
@@ -161,20 +160,5 @@ export class SightScene {
       await ctx.sendMessage(response, actionButtons());
       await ctx.scene.leave();
     }
-  }
-
-  private async handleErrorResponse(ctx: Context, error: any) {
-    if (error.response?.status === HttpStatusCode.TooManyRequests) {
-      await ctx.sendMessage(SightPhrases.tooManyRequests);
-      return;
-    }
-
-    if (error instanceof NotFoundException) {
-      await ctx.sendMessage(error.message);
-      await ctx.scene.reenter();
-      return;
-    }
-
-    await ctx.sendMessage(SightPhrases.sendError);
   }
 }
