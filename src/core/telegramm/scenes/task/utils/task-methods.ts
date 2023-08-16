@@ -1,5 +1,5 @@
 import { Task } from 'src/core/task/task.model';
-import { compareDateWithCurrent } from './date-methods';
+import { compareDateWithCurrent } from '../../utils/date-methods';
 
 export function formatTasks(tasks: Task[]): string[] {
   const currentDate = new Date();

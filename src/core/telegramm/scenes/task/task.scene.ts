@@ -1,28 +1,40 @@
-import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
-import { Markup, Telegraf } from 'telegraf';
-import { SceneEnum } from '../../enums/scene.enum';
-import { Context } from '../../interfaces/context.interface';
-
-import { taskActionButtons } from './buttons/task-action.button';
-import { TaskPhrases } from './enums/task.phrases';
+import { telegramm } from 'env';
 
 import { OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { telegramm } from 'env';
-import { Task } from 'src/core/task/task.model';
-import { UserService } from 'src/core/user/user.service';
+
+import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
+import { Markup, Telegraf } from 'telegraf';
 import { callbackQuery } from 'telegraf/filters';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
+
+import { Context } from '../../interfaces/context.interface';
+
+import { UserService } from 'src/core/user/user.service';
 import { TaskService } from '../../../task/task.service';
-import { actionButtons } from '../../buttons/actions.button';
+
 import { NotificationScene } from '../notification/notification.scene';
-import { formatTasks } from '../utils/task-methods';
-import { tasksListButtons } from './buttons/task-list.button';
-import { taskNotificationButtons } from './buttons/task-notification-question.button';
-import { CreateTaskParams } from './dto/task.dto';
-import { TaskActionEnum } from './enums/task-action.enum';
-import { TaskContextStepEnum } from './enums/task-context-step.enum';
-import { compareDateWithCurrent, compareTimeWithCurrent } from '../utils';
+
+import { actionButtons } from '../../buttons/actions.button';
+import {
+  taskActionButtons,
+  taskNotificationButtons,
+  tasksListButtons,
+} from './buttons';
+
+import { CreateTaskParams } from './dto';
+
+import {
+  formatTasks,
+  getUsersTasks,
+  handleDescriptionInput,
+  handleTitleInput,
+  saveTask,
+} from './utils';
+
+import { SceneEnum } from '../../enums/scene.enum';
+import { compareDateWithCurrent } from '../utils';
+import { TaskActionEnum, TaskContextStepEnum, TaskPhrases } from './enums';
 
 @Scene(SceneEnum.taskScene)
 export class TaskScene implements OnModuleInit {
@@ -33,8 +45,8 @@ export class TaskScene implements OnModuleInit {
   ) {}
 
   private stepHandlers = {
-    title: this.handleTitleInput,
-    description: this.handleDescriptionInput,
+    title: handleTitleInput,
+    description: handleDescriptionInput,
     save: this.saveTaskAndExit,
     addNotification: this.handleNotificationInput,
   };
@@ -87,7 +99,9 @@ export class TaskScene implements OnModuleInit {
     }
 
     const telegrammID = message?.from.id || ctx.chat.id;
-    const tasks = formatTasks(await this.getUsersTasks(telegrammID));
+    const tasks = formatTasks(
+      await getUsersTasks(telegrammID, this.userService),
+    );
 
     await ctx.sendMessage(TaskPhrases.start(tasks), taskActionButtons());
   }
@@ -104,20 +118,25 @@ export class TaskScene implements OnModuleInit {
 
   @Action(TaskActionEnum.deleteTask)
   async deleteTaskAction(@Ctx() ctx: Context) {
+    await ctx.answerCbQuery();
+
     const telegrammID = ctx.chat.id;
-    const tasks = await this.getUsersTasks(telegrammID);
+    const tasks = await getUsersTasks(telegrammID, this.userService);
 
     await ctx.sendMessage(TaskPhrases.whichTaskRemove, tasksListButtons(tasks));
   }
 
   @Action(TaskActionEnum.menu)
   async menu(@Ctx() ctx: Context) {
+    await ctx.answerCbQuery();
+
     await ctx.sendMessage(TaskPhrases.menu, actionButtons());
     await ctx.scene.leave();
   }
 
   @Action(/\d+/)
   async deleteTask(@Ctx() ctx: Context) {
+    await ctx.answerCbQuery();
     if (ctx.has(callbackQuery('data'))) {
       const taskId = Number(ctx.callbackQuery.data);
       const telegrammID = ctx.chat.id;
@@ -167,79 +186,6 @@ export class TaskScene implements OnModuleInit {
     }
   }
 
-  private async handleTitleInput(
-    @Ctx() ctx: Context,
-    @Message() message: MessageType.TextMessage,
-    task: CreateTaskParams,
-  ) {
-    task.title = message.text;
-    ctx.session.__scenes.step = TaskContextStepEnum.description;
-
-    await ctx.sendMessage(TaskPhrases.enterTaskDescription);
-  }
-
-  private async handleDescriptionInput(
-    @Ctx() ctx: Context,
-    @Message() message: MessageType.TextMessage,
-    task: CreateTaskParams,
-  ) {
-    task.description = message.text;
-    ctx.session.__scenes.step = TaskContextStepEnum.save;
-
-    await ctx.sendMessage(TaskPhrases.enterTaskDate);
-
-    ctx.step = TaskContextStepEnum.save;
-    ctx.state.previousScene = SceneEnum.taskScene;
-    ctx.state.previousSceneData = JSON.stringify(task);
-
-    await ctx.scene.enter(SceneEnum.dateScene);
-  }
-
-  private async saveTaskAndExit(
-    @Ctx() ctx: Context,
-    @Message() message: MessageType.TextMessage,
-    task: CreateTaskParams,
-  ) {
-    const { date: time, ...taskInfo } = JSON.parse(ctx.state.previousSceneData);
-
-    const createdTask = await this.taskService.create({
-      ...taskInfo,
-      time,
-      notification: false,
-    });
-
-    const telegrammID = ctx.chat.id;
-    let user = await this.userService.findBy({ telegrammID });
-
-    if (!user) {
-      user = await this.userService.create({
-        name: ctx.callbackQuery.from.first_name,
-        telegrammID,
-      });
-    }
-
-    await user.$add('task', createdTask);
-
-    ctx.session.__scenes.state.sessionData.task.id = createdTask.id;
-
-    await ctx.sendMessage(
-      TaskPhrases.addNotificationQuestion,
-      taskNotificationButtons(),
-    );
-  }
-
-  private async getUsersTasks(telegrammID: number): Promise<Task[]> {
-    const user = await this.userService.findBy({ telegrammID });
-
-    let tasks: Task[] = [];
-
-    if (user) {
-      tasks = await user.$get('tasks');
-    }
-
-    return tasks;
-  }
-
   private async handleNotificationInput(@Ctx() ctx: Context) {
     const { time, id } = JSON.parse(ctx.state.previousSceneData);
     const task = await this.taskService.findOne({ id });
@@ -269,8 +215,21 @@ export class TaskScene implements OnModuleInit {
     delete ctx.step;
     delete ctx.state.previousSceneData;
 
-    const tasks = formatTasks(await this.getUsersTasks(ctx.chat.id));
+    const tasks = formatTasks(
+      await getUsersTasks(ctx.chat.id, this.userService),
+    );
 
     await ctx.sendMessage(TaskPhrases.start(tasks), actionButtons());
+  }
+
+  private async saveTaskAndExit(@Ctx() ctx: Context) {
+    const createdTask = await saveTask(ctx, this.taskService, this.userService);
+
+    ctx.session.__scenes.state.sessionData.task.id = createdTask.id;
+
+    await ctx.sendMessage(
+      TaskPhrases.addNotificationQuestion,
+      taskNotificationButtons(),
+    );
   }
 }
