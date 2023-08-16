@@ -73,7 +73,6 @@ export class WeatherScene implements OnModuleInit {
           time,
           this.handleCron,
           usersWeather,
-          true,
         );
       }
     }
@@ -212,7 +211,6 @@ export class WeatherScene implements OnModuleInit {
           event.time,
           this.handleCron,
           userWeather,
-          true,
         );
       }
 

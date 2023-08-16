@@ -69,7 +69,6 @@ export class TaskScene implements OnModuleInit {
             task.time,
             this.handleCron,
             map,
-            false,
           );
         }
       }
@@ -206,7 +205,6 @@ export class TaskScene implements OnModuleInit {
         date,
         this.handleCron,
         userTask,
-        false,
       );
     }
 
