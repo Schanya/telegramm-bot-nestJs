@@ -22,6 +22,7 @@ export class TimeScene {
     ctx.session.__scenes.step = ctx.step;
 
     const currentDate = new Date();
+
     currentDate.setHours(currentDate.getHours() + 3);
 
     const initialTime = {
@@ -91,6 +92,7 @@ export class TimeScene {
       const previousSceneData = JSON.parse(
         ctx.session.__scenes.state.previousSceneData,
       );
+      currentTime.hours = currentTime.hours - 3;
       previousSceneData.time = currentTime;
 
       ctx.state.previousSceneData = JSON.stringify(previousSceneData);

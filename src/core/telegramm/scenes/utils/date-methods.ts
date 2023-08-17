@@ -30,5 +30,8 @@ export function compareDateWithCurrent(date: Date) {
 }
 
 export function formatDateToString(date: Date): string {
-  return `${date.getDay()}.${date.getMonth()}.${date.getFullYear()}`;
+  const day = String(date.getDay()).padStart(2, '0');
+  const month = String(date.getMonth()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
 }
