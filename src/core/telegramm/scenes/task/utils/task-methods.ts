@@ -6,7 +6,7 @@ export function formatTasks(tasks: Task[]): string[] {
 
   return tasks.map((task) => {
     const difference = task.time.getTime() - currentDate.getTime();
-    task.time.setHours(task.time.getHours() - 3);
+    task.time.setHours(task.time.getHours() + 3);
 
     const hasNotification = ` ${task.notification ? '🔔' : ''}`;
     const notificationTime = task.notification
