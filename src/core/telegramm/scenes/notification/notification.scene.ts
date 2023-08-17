@@ -20,7 +20,7 @@ export class NotificationScene {
 
     this.schedulerRegistry.addCronJob(name, job);
     job.start();
-    // this.getCrons();
+    this.getCrons();
   }
 
   getCrons() {

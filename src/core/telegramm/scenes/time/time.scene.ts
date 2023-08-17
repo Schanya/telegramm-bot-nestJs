@@ -22,6 +22,8 @@ export class TimeScene {
     ctx.session.__scenes.step = ctx.step;
 
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() + 3);
+
     const initialTime = {
       hours: currentDate.getHours(),
       minutes: currentDate.getMinutes(),

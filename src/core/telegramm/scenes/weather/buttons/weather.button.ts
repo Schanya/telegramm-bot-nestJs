@@ -6,7 +6,7 @@ export function weatherButtons() {
     [
       Markup.button.callback('Узнать погоду', WeatherActionEnum.getWeather),
       Markup.button.callback(
-        'Оформить пописку',
+        'Оформить подписку',
         WeatherActionEnum.subscription,
       ),
       Markup.button.callback('Главное меню', WeatherActionEnum.menu),

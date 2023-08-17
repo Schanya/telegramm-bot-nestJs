@@ -9,6 +9,6 @@ export function tasksListButtons(tasks: Task[]) {
   );
 
   return Markup.inlineKeyboard(buttons, {
-    columns: Math.floor(buttons.length / 3),
+    columns: 2,
   });
 }

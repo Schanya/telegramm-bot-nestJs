@@ -28,3 +28,7 @@ export function compareDateWithCurrent(date: Date) {
 
   return false;
 }
+
+export function formatDateToString(date: Date): string {
+  return `${date.getDay()}.${date.getMonth()}.${date.getFullYear()}`;
+}
