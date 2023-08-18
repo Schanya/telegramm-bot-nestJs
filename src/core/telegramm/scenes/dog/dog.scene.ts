@@ -1,9 +1,11 @@
+import { dog } from 'env';
+
 import { InjectBot, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
-import { Context } from '../../interfaces/context.interface';
-import { SceneEnum } from '../../enums/scene.enum';
-import { axiosDownload } from '../utils/httpRequest';
-import { dog } from 'env';
+
+import { SceneEnum } from '@telegramm/enums';
+import { Context } from '@telegramm/interfaces';
+import { axiosDownload } from '../utils';
 
 @Scene(SceneEnum.dogScene)
 export class DogScene {

@@ -1,9 +1,10 @@
 import { CreateSightParams, SigthXidsDto } from '../scenes/sight/dto';
-import { CreateTaskParams } from '../scenes/task/dto/task.dto';
-import { CreateWeatherNotificationParams } from '../scenes/weather/dto/weather.dto';
+import { CreateTaskParams } from '../scenes/task/dto';
+
+import { NotificationParamsDto } from '../scenes/weather/dto';
 
 export type SessionData = {
-  weather?: CreateWeatherNotificationParams;
+  weather?: NotificationParamsDto;
   sight?: CreateSightParams;
   sightsXids?: SigthXidsDto[];
   task?: CreateTaskParams;

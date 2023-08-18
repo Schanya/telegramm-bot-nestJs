@@ -7,19 +7,19 @@ import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 
-import { UnsubscribeExeption } from '../../errors';
-import { Context } from '../../interfaces/context.interface';
+import { UnsubscribeExeption } from '@telegramm/errors';
+import { Context } from '@telegramm/interfaces';
 
-import { EventService } from 'src/core/event/event.service';
-import { UserService } from 'src/core/user/user.service';
+import { EventService } from '@event/event.service';
+import { UserService } from '@user/user.service';
 import { NotificationScene } from '../notification/notification.scene';
 
-import { actionButtons } from '../../buttons/actions.button';
+import { actionButtons } from '@telegramm/buttons';
 import { weatherButtons } from './buttons';
 
-import { CreateWeatherNotificationParams, WeatherDto } from './dto';
+import { NotificationParamsDto, WeatherDto } from './dto';
 
-import { SceneEnum } from '../../enums/scene.enum';
+import { SceneEnum, railwayServiceTimeZoneOffset } from '@telegramm/enums';
 import {
   WeatherActionEnum,
   WeatherContextStepEnum,
@@ -37,7 +37,6 @@ import {
   saveUser,
   sendWeatherApiRequest,
 } from './utils';
-import { railwayServiceTimeZoneOffset } from '../../enums/time-zone';
 
 @Scene(SceneEnum.weatherScene)
 export class WeatherScene implements OnModuleInit {
@@ -177,7 +176,7 @@ export class WeatherScene implements OnModuleInit {
   ) {
     try {
       const step = ctx.session.__scenes.step;
-      const weather: CreateWeatherNotificationParams =
+      const weather: NotificationParamsDto =
         ctx.session.__scenes.state.sessionData.weather;
 
       const handler = this.stepHandlers[step];
@@ -192,7 +191,7 @@ export class WeatherScene implements OnModuleInit {
   private async subscription(
     @Ctx() ctx: Context,
     @Message() message: MessageType.TextMessage,
-    weather: CreateWeatherNotificationParams,
+    weather: NotificationParamsDto,
   ) {
     const telegrammID = ctx.chat.id;
     const event = await getUserEvent(telegrammID, this.userService);

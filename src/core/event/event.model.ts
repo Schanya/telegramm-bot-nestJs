@@ -5,8 +5,9 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { User } from '../user/user.model';
-import { EventType } from './types/event.type';
+
+import { User } from '@user/user.model';
+import { EventType } from './types';
 
 export interface EventCreationAttrs {
   time: Date;

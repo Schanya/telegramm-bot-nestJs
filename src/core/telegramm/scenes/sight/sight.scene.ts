@@ -4,14 +4,17 @@ import { Action, Ctx, Message, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { callbackQuery } from 'telegraf/filters';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 
-import { SceneEnum } from '../../enums/scene.enum';
-import { ActionNotFoundExeption, SightsNotFoundExeption } from '../../errors';
-import { Context } from '../../interfaces/context.interface';
+import { SceneEnum } from '@telegramm/enums';
+import {
+  ActionNotFoundExeption,
+  SightsNotFoundExeption,
+} from '@telegramm/errors';
+import { Context } from '@telegramm/interfaces';
 
 import { formatSightsInfo } from '../utils';
 import { SightType } from './types';
 
-import { actionButtons } from '../../buttons/actions.button';
+import { actionButtons } from '@telegramm/buttons';
 import {
   continueSightButtons,
   sightButtons,

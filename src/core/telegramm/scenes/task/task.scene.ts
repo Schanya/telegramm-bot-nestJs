@@ -8,14 +8,14 @@ import { Markup, Telegraf } from 'telegraf';
 import { callbackQuery } from 'telegraf/filters';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 
-import { Context } from '../../interfaces/context.interface';
+import { Context } from '@telegramm/interfaces';
 
-import { UserService } from 'src/core/user/user.service';
-import { TaskService } from '../../../task/task.service';
+import { UserService } from '@user/user.service';
+import { TaskService } from '@task/task.service';
 
 import { NotificationScene } from '../notification/notification.scene';
 
-import { actionButtons } from '../../buttons/actions.button';
+import { actionButtons } from '@telegramm/buttons';
 import {
   taskActionButtons,
   taskNotificationButtons,
@@ -32,7 +32,7 @@ import {
   saveTask,
 } from './utils';
 
-import { SceneEnum } from '../../enums/scene.enum';
+import { SceneEnum } from '@telegramm/enums';
 import { compareDateWithCurrent } from '../utils';
 import { TaskActionEnum, TaskContextStepEnum, TaskPhrases } from './enums';
 

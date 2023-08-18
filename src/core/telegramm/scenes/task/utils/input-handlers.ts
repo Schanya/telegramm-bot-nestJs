@@ -1,9 +1,10 @@
-import { SceneEnum } from 'src/core/telegramm/enums/scene.enum';
-import { Context } from 'src/core/telegramm/interfaces/context.interface';
 import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { CreateTaskParams } from '../dto/task.dto';
-import { TaskContextStepEnum } from '../enums/task-context-step.enum';
-import { TaskPhrases } from '../enums/task.phrases';
+
+import { SceneEnum } from '@telegramm/enums';
+import { Context } from '@telegramm/interfaces';
+
+import { CreateTaskParams } from '../dto';
+import { TaskContextStepEnum, TaskPhrases } from '../enums';
 
 export async function handleTitleInput(
   ctx: Context,

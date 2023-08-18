@@ -1,9 +1,12 @@
-import { HttpStatusCode } from 'axios';
 import { weather } from 'env';
-import { InvalidInputExeption } from 'src/core/telegramm/errors';
-import { Context } from 'src/core/telegramm/interfaces/context.interface';
-import { axiosDownload } from '../../utils';
-import { WeatherDto, WeatherRequestParamsDto } from '../dto';
+
+import { HttpStatusCode } from 'axios';
+
+import { InvalidInputExeption } from '@telegramm/errors';
+import { Context } from '@telegramm/interfaces';
+import { axiosDownload } from '@telegramm/scenes/utils';
+
+import { WeatherDto, RequestParamsDto } from '../dto';
 import { WeatherPhrases, WeatherRequestParamsConstants } from '../enums';
 
 export async function getWeather(ctx: Context, city: string) {
@@ -11,14 +14,14 @@ export async function getWeather(ctx: Context, city: string) {
     throw new InvalidInputExeption(WeatherPhrases.cityNameExeption);
   }
 
-  const params: WeatherRequestParamsDto = { q: city };
+  const params: RequestParamsDto = { q: city };
   const result = await sendWeatherApiRequest(params);
 
   return result;
 }
 
 export async function sendWeatherApiRequest(
-  params?: WeatherRequestParamsDto,
+  params?: RequestParamsDto,
 ): Promise<WeatherDto> {
   try {
     const { data } = await axiosDownload(weather.url, {

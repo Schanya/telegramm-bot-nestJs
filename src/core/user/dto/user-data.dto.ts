@@ -1,6 +1,6 @@
-import { CreateCityDto } from 'src/core/city/dto/create-city.dto';
+import { CreateCityDto } from '@city/dto/create-city.dto';
 import { CreateUserDto } from './create-user.dto';
-import { CreateEventDto } from 'src/core/event/dto/create-event.dto';
+import { CreateEventDto } from '@event/dto/create-event.dto';
 
 export class UserDataDto {
   userInfo?: CreateUserDto;

@@ -1,8 +1,9 @@
 import { InjectBot, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
-import { Context } from '../../interfaces/context.interface';
-import { helpList } from '../utils/show-help-list.utils';
-import { SceneEnum } from '../../enums/scene.enum';
+
+import { SceneEnum } from '@telegramm/enums';
+import { Context } from '@telegramm/interfaces';
+import { helpList } from '../utils';
 
 @Scene(SceneEnum.helpScene)
 export class HelpScene {

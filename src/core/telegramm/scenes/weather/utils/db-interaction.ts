@@ -1,8 +1,11 @@
-import { City } from 'src/core/city/city.model';
-import { Event } from 'src/core/event/event.model';
-import { EventType } from 'src/core/event/types/event.type';
-import { UserService } from 'src/core/user/user.service';
 import { Context } from 'telegraf';
+
+import { City } from '@city/city.model';
+import { Event } from '@event/event.model';
+
+import { EventType } from '@event/types';
+
+import { UserService } from '@user/user.service';
 
 export async function getUserEvent(
   telegrammID: number,

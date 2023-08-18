@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/sequelize';
+
+import { CreateEventDto, EventOptions, ReadAllEventDto } from './dto';
 import { Event } from './event.model';
-import { EventOptions } from './dto/find-event.options';
-import { ReadAllEventDto } from './dto/read-all-event.dto';
-import { CreateEventDto } from './dto/create-event.dto';
 
 @Injectable()
 export class EventService {

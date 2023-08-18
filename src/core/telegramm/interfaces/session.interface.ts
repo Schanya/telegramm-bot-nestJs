@@ -1,7 +1,6 @@
 import { SceneSessionData } from 'telegraf/typings/scenes';
-import { SceneEnum } from '../enums/scene.enum';
-import { ContextData } from '../types/context.type';
-import { SessionData } from '../types/session-data.type';
+import { SceneEnum } from '../enums';
+import { ContextData, SessionData } from '../types';
 
 export interface MySceneSession extends SceneSessionData {
   step: ContextData;

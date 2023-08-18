@@ -1,5 +1,6 @@
-import { Task } from 'src/core/task/task.model';
 import { Markup } from 'telegraf';
+
+import { Task } from '@task/task.model';
 
 export function tasksListButtons(tasks: Task[]) {
   const buttons = [];

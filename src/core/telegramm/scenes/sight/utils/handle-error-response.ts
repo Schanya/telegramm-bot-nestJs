@@ -1,7 +1,9 @@
-import { HttpStatusCode } from 'axios';
-import { Context } from 'src/core/telegramm/interfaces/context.interface';
-import { SightPhrases } from '../enums';
 import { NotFoundException } from '@nestjs/common';
+
+import { HttpStatusCode } from 'axios';
+
+import { Context } from '@telegramm/interfaces';
+import { SightPhrases } from '../enums';
 
 export async function handleErrorResponse(ctx: Context, error: any) {
   if (error.response?.status === HttpStatusCode.TooManyRequests) {

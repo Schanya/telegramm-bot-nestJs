@@ -1,18 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/sequelize';
+
+import { CityService } from '@city/city.service';
+import { EventService } from '@event/event.service';
+
+import { CreateUserDto, ReadAllUserDto, UserDataDto, UserOptions } from './dto';
 import { User } from './user.model';
-import { UserOptions } from './dto/find-user.options';
-import { ReadAllUserDto } from './dto/read-all-user.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserDataDto } from './dto/user-data.dto';
-import { CityService } from '../city/city.service';
-import { EventService } from '../event/event.service';
-import { formatTime } from '../telegramm/scenes/utils/time-methods';
-import { EventType } from '../event/types/event.type';
 
 @Injectable()
 export class UserService {
