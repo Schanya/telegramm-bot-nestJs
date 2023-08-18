@@ -1,3 +1,4 @@
+import { City } from 'src/core/city/city.model';
 import { Event } from 'src/core/event/event.model';
 import { EventType } from 'src/core/event/types/event.type';
 import { UserService } from 'src/core/user/user.service';
@@ -14,6 +15,19 @@ export async function getUserEvent(
     const event = events[0];
 
     return event;
+  }
+}
+
+export async function getUserCity(
+  telegrammID: number,
+  userService: UserService,
+): Promise<City> {
+  const user = await userService.findBy({ telegrammID });
+
+  if (user) {
+    const city = await user.$get('city');
+
+    return city;
   }
 }
 

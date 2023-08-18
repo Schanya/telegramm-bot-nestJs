@@ -1,3 +1,4 @@
+import { Context } from 'telegraf';
 import { TimeDto } from '../time/dto/time.dto';
 
 export function compareTimeWithCurrent(date: Date) {

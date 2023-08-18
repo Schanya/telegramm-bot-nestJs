@@ -8,6 +8,8 @@ import { SubscriptionExeption } from 'src/core/telegramm/errors';
 import { dateToTimeDto, formatTime } from '../../utils';
 import { Event } from 'src/core/event/event.model';
 import { SceneEnum } from 'src/core/telegramm/enums/scene.enum';
+import { City } from 'src/core/city/city.model';
+import { railwayServiceTimeZoneOffset } from 'src/core/telegramm/enums/time-zone';
 
 export async function handleGetWeatherInput(
   ctx: Context,
@@ -32,14 +34,17 @@ export async function handleSubscriptionInput(
   message: MessageType.TextMessage,
   weather: CreateWeatherNotificationParams,
   event: Event,
+  userCity: City,
 ) {
   const messageText = message.text;
   const { cityName } = await getWeather(ctx, messageText);
 
   if (event) {
+    event.time.setHours(event.time.getHours() + railwayServiceTimeZoneOffset);
+
     throw new SubscriptionExeption(
       WeatherPhrases.subscriptionExeption(
-        cityName,
+        userCity.name,
         formatTime(dateToTimeDto(event.time)),
       ),
     );

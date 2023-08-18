@@ -1,12 +1,13 @@
 import { Task } from 'src/core/task/task.model';
 import { dateToTimeDto, formatDateToString, formatTime } from '../../utils';
+import { railwayServiceTimeZoneOffset } from 'src/core/telegramm/enums/time-zone';
 
 export function formatTasks(tasks: Task[]): string[] {
   const currentDate = new Date();
 
   return tasks.map((task) => {
     const difference = task.time.getTime() - currentDate.getTime();
-    task.time.setHours(task.time.getHours() + 3);
+    task.time.setHours(task.time.getHours() + railwayServiceTimeZoneOffset);
 
     const hasNotification = ` ${task.notification ? '🔔' : ''}`;
     const notificationTime = task.notification
