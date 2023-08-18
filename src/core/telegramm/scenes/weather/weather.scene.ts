@@ -29,6 +29,7 @@ import {
 import { compareTimeWithCurrent, dateToTimeDto, formatTime } from '../utils';
 import {
   errorHandlerResponse,
+  getUserCity,
   getUserEvent,
   getWeather,
   handleGetWeatherInput,
@@ -36,6 +37,7 @@ import {
   saveUser,
   sendWeatherApiRequest,
 } from './utils';
+import { railwayServiceTimeZoneOffset } from '../../enums/time-zone';
 
 @Scene(SceneEnum.weatherScene)
 export class WeatherScene implements OnModuleInit {
@@ -109,7 +111,7 @@ export class WeatherScene implements OnModuleInit {
   @Action(WeatherActionEnum.menu)
   async menu(@Ctx() ctx: Context) {
     await ctx.answerCbQuery();
-    await ctx.sendMessage('Главное меню', actionButtons());
+    await ctx.sendMessage(WeatherPhrases.menu, actionButtons());
 
     await ctx.scene.leave();
   }
@@ -151,6 +153,7 @@ export class WeatherScene implements OnModuleInit {
       this.notificationService.deleteCron(`${event.id}`);
       await this.eventService.delete(event.id);
 
+      event.time.setHours(event.time.getHours() + railwayServiceTimeZoneOffset);
       await ctx.sendMessage(
         WeatherPhrases.notificationDeleted(
           city.name,
@@ -193,7 +196,10 @@ export class WeatherScene implements OnModuleInit {
   ) {
     const telegrammID = ctx.chat.id;
     const event = await getUserEvent(telegrammID, this.userService);
-    await handleSubscriptionInput(ctx, message, weather, event);
+
+    const userCity = await getUserCity(telegrammID, this.userService);
+
+    await handleSubscriptionInput(ctx, message, weather, event, userCity);
   }
 
   private async saveWeatherAndExit(@Ctx() ctx: Context) {
@@ -213,6 +219,8 @@ export class WeatherScene implements OnModuleInit {
           userWeather,
         );
       }
+
+      event.time.setHours(event.time.getHours() + railwayServiceTimeZoneOffset);
 
       await ctx.sendMessage(
         WeatherPhrases.notificationSet(formatTime(dateToTimeDto(event.time))),

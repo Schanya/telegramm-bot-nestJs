@@ -10,6 +10,7 @@ import { TimeActionEnum } from './enums/time-action.enum';
 import { TIME } from './enums/time.constants';
 import { TimePhrases } from './enums/time.phrases';
 import { TimeActionType } from './types/time-action.type';
+import { railwayServiceTimeZoneOffset } from '../../enums/time-zone';
 
 @Scene(SceneEnum.timeScene)
 export class TimeScene {
@@ -23,7 +24,7 @@ export class TimeScene {
 
     const currentDate = new Date();
 
-    currentDate.setHours(currentDate.getHours() + 3);
+    currentDate.setHours(currentDate.getHours() + railwayServiceTimeZoneOffset);
 
     const initialTime = {
       hours: currentDate.getHours(),
@@ -94,13 +95,13 @@ export class TimeScene {
       );
 
       const tempDate = new Date();
-      tempDate.setHours(currentTime.hours - 3);
+      tempDate.setHours(currentTime.hours - railwayServiceTimeZoneOffset);
       tempDate.setMinutes(currentTime.minutes);
 
-      currentTime.hours = tempDate.getHours();
-      currentTime.minutes = tempDate.getMinutes();
-
-      previousSceneData.time = currentTime;
+      previousSceneData.time = {
+        hours: tempDate.getHours(),
+        minutes: tempDate.getMinutes(),
+      };
 
       ctx.state.previousSceneData = JSON.stringify(previousSceneData);
       ctx.step = ctx.session.__scenes.step;
