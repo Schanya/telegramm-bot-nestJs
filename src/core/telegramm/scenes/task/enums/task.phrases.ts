@@ -1,4 +1,4 @@
-import { Task } from 'src/core/task/task.model';
+import { Task } from '@task/task.model';
 
 export const TaskPhrases = {
   start: (tasks: string[]) => {

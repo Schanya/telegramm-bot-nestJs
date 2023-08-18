@@ -1,7 +1,8 @@
-import { Task } from 'src/core/task/task.model';
-import { TaskService } from 'src/core/task/task.service';
-import { Context } from 'src/core/telegramm/interfaces/context.interface';
-import { UserService } from 'src/core/user/user.service';
+import { Context } from '@telegramm/interfaces/context.interface';
+
+import { Task } from '@task/task.model';
+import { TaskService } from '@task/task.service';
+import { UserService } from '@user/user.service';
 
 export async function saveTask(
   ctx: Context,

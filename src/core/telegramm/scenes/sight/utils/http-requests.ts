@@ -1,4 +1,9 @@
 import { sight } from 'env';
+
+import { NotFoundException } from '@nestjs/common';
+
+import { SightsNotFoundExeption } from '@telegramm/errors';
+import { axiosDownload, formatAddress } from '@telegramm/scenes/utils';
 import {
   CityGeoData,
   CreateSightParams,
@@ -6,9 +11,6 @@ import {
   SigthXidsDto,
 } from '../dto';
 import { DEFAULT_REQUEST_PARAMS, SightPhrases, urls } from '../enums';
-import { NotFoundException } from '@nestjs/common';
-import { SightsNotFoundExeption } from 'src/core/telegramm/errors';
-import { axiosDownload, formatAddress } from '../../utils';
 
 export async function getCityGeoData(
   cityGeoDataParams: SightRequestParams,

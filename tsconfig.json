@@ -16,6 +16,13 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@task/*":["src/core/task/*"],
+      "@city/*":["src/core/city/*"],
+      "@event/*":["src/core/event/*"],
+      "@user/*":["src/core/user/*"],
+      "@telegramm/*":["src/core/telegramm/*"],
+    }
   }
 }

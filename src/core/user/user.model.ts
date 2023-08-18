@@ -7,9 +7,10 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { City } from '../city/city.model';
-import { Event } from '../event/event.model';
-import { Task } from '../task/task.model';
+
+import { City } from '@city/city.model';
+import { Event } from '@event/event.model';
+import { Task } from '@task/task.model';
 
 export interface UserCreationAttrs {
   telegrammID: number;

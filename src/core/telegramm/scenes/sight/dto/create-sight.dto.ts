@@ -1,4 +1,4 @@
-import { SightType } from '../types/sight.type';
+import { SightType } from '../types';
 
 export class CreateSightParams {
   name?: string;

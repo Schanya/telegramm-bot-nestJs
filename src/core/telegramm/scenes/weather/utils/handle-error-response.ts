@@ -1,6 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
+
 import { HttpStatusCode } from 'axios';
-import { Context } from 'src/core/telegramm/interfaces/context.interface';
+
+import { Context } from '@telegramm/interfaces';
 import { WeatherPhrases } from '../enums';
 
 export async function errorHandlerResponse(ctx: Context, error: any) {

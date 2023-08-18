@@ -1,16 +1,15 @@
 import { Ctx, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { callbackQuery } from 'telegraf/filters';
 import { Message } from 'telegraf/typings/core/types/typegram';
-import { SceneEnum } from '../../enums/scene.enum';
-import { Context } from '../../interfaces/context.interface';
-import { formatTime, parseTime } from '../utils/time-methods';
-import { timeButtons } from './buttons/time.button';
-import { TimeDto } from './dto/time.dto';
-import { TimeActionEnum } from './enums/time-action.enum';
-import { TIME } from './enums/time.constants';
-import { TimePhrases } from './enums/time.phrases';
-import { TimeActionType } from './types/time-action.type';
-import { railwayServiceTimeZoneOffset } from '../../enums/time-zone';
+
+import { SceneEnum, railwayServiceTimeZoneOffset } from '@telegramm/enums';
+import { Context } from '@telegramm/interfaces';
+
+import { formatTime, parseTime } from '../utils';
+import { timeButtons } from './buttons';
+import { TimeDto } from './dto';
+import { TIME, TimeActionEnum, TimePhrases } from './enums';
+import { TimeActionType } from './types';
 
 @Scene(SceneEnum.timeScene)
 export class TimeScene {

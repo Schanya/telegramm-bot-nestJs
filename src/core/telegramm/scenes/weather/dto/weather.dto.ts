@@ -3,10 +3,3 @@ export class WeatherDto {
   description: string;
   temperature: number;
 }
-export class CreateWeatherNotificationParams {
-  cityName?: string;
-}
-
-export class WeatherRequestParamsDto {
-  q: string;
-}

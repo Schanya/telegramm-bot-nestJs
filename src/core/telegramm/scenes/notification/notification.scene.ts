@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
+
 import { CronJob } from 'cron';
 
 @Injectable()

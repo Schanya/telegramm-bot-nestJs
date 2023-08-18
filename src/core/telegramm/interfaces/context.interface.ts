@@ -1,6 +1,6 @@
 import { SceneContext } from 'telegraf/typings/scenes';
-import { SceneEnum } from '../enums/scene.enum';
-import { ContextData } from '../types/context.type';
+import { SceneEnum } from '../enums';
+import { ContextData } from '../types';
 import { MySceneSession } from './session.interface';
 
 export interface Context extends SceneContext<MySceneSession> {

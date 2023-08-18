@@ -1,9 +1,11 @@
 import { cat } from 'env';
+
 import { InjectBot, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
-import { SceneEnum } from '../../enums/scene.enum';
-import { Context } from '../../interfaces/context.interface';
-import { axiosDownload } from '../utils/httpRequest';
+
+import { SceneEnum } from '@telegramm/enums';
+import { Context } from '@telegramm/interfaces';
+import { axiosDownload } from '../utils';
 
 @Scene(SceneEnum.catScene)
 export class CatScene {

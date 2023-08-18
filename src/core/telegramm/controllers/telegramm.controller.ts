@@ -1,8 +1,8 @@
 import { Command, Ctx, Hears, Start, Update } from 'nestjs-telegraf';
 
-import { actionButtons } from '../buttons/actions.button';
-import { Context } from '../interfaces/context.interface';
-import { SceneEnum } from '../enums/scene.enum';
+import { actionButtons } from '../buttons';
+import { Context } from '../interfaces';
+import { SceneEnum, ActionButtonsEnum, ControllerPhrases } from '../enums';
 
 @Update()
 export class TelegrammController {
@@ -10,50 +10,50 @@ export class TelegrammController {
 
   @Start()
   async startCommand(ctx: Context) {
-    await ctx.reply(`Привет 👋, ${ctx.message.from.first_name}\n`);
-    await ctx.reply('Что ты хочешь сделать?', actionButtons());
+    await ctx.reply(ControllerPhrases.greeting(ctx.message.from.first_name));
+    await ctx.reply(ControllerPhrases.chooseAction, actionButtons());
   }
 
-  @Hears('🆘 Help')
-  @Command('help')
+  @Hears(ActionButtonsEnum.helpMessage)
+  @Command(ActionButtonsEnum.helpCallback)
   async helpHears(@Ctx() ctx: Context) {
     await ctx.scene.enter(SceneEnum.helpScene);
   }
 
-  @Hears('🐱 Cat')
-  @Command('cat')
+  @Hears(ActionButtonsEnum.catMessage)
+  @Command(ActionButtonsEnum.catCallback)
   async catHears(@Ctx() ctx: Context) {
     await ctx.scene.enter(SceneEnum.catScene);
   }
 
-  @Hears('🐶 Dog')
-  @Command('dog')
+  @Hears(ActionButtonsEnum.dogMessage)
+  @Command(ActionButtonsEnum.dogCallback)
   async dogHears(@Ctx() ctx: Context) {
     await ctx.scene.enter(SceneEnum.dogScene);
   }
 
-  @Hears('🌤 Weather')
-  @Command('weather')
+  @Hears(ActionButtonsEnum.weatherMessage)
+  @Command(ActionButtonsEnum.weatherCallback)
   async weatherHears(@Ctx() ctx: Context) {
-    await ctx.sendMessage('Отлично', {
+    await ctx.sendMessage(ControllerPhrases.sceneEnter, {
       reply_markup: { remove_keyboard: true },
     });
     await ctx.scene.enter(SceneEnum.weatherScene);
   }
 
-  @Hears('🔍 Sight')
-  @Command('sight')
+  @Hears(ActionButtonsEnum.sightMessage)
+  @Command(ActionButtonsEnum.sightMessage)
   async sightHears(@Ctx() ctx: Context) {
-    await ctx.sendMessage('Отлично', {
+    await ctx.sendMessage(ControllerPhrases.sceneEnter, {
       reply_markup: { remove_keyboard: true },
     });
     await ctx.scene.enter(SceneEnum.sightScene);
   }
 
-  @Hears('📋 Tasks')
-  @Command('task')
+  @Hears(ActionButtonsEnum.taskMessage)
+  @Command(ActionButtonsEnum.taskCallback)
   async taskHears(@Ctx() ctx: Context) {
-    await ctx.sendMessage('Отлично', {
+    await ctx.sendMessage(ControllerPhrases.sceneEnter, {
       reply_markup: { remove_keyboard: true },
     });
     await ctx.scene.enter(SceneEnum.taskScene);

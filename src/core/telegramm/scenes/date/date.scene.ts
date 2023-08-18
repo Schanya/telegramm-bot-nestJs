@@ -1,8 +1,9 @@
 import { Ctx, On, Scene, SceneEnter } from 'nestjs-telegraf';
 import { callbackQuery } from 'telegraf/filters';
-import { Context } from '../../interfaces/context.interface';
-import { SceneEnum } from '../../enums/scene.enum';
-import { formatDate } from '../utils/date-methods';
+
+import { SceneEnum } from '@telegramm/enums';
+import { Context } from '@telegramm/interfaces';
+import { formatDate } from '../utils';
 
 @Scene(SceneEnum.dateScene)
 export class DateScene {
@@ -89,16 +90,33 @@ export class DateScene {
       },
     ]);
 
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
     dayLines.forEach((line) => {
       buttons[buttons.length] = [];
       line.forEach((day) => {
-        buttons[buttons.length - 1].push({
-          text: day,
-          callback_data:
-            day > 0
+        if (day > 0) {
+          let dayDate = new Date(
+            currentMonthDate.getFullYear(),
+            currentMonthDate.getMonth(),
+            day,
+          );
+          let callbackData =
+            dayDate >= currentDate
               ? 'info_' + this.setBeforeZero(day) + '-' + current_info
-              : 'inline',
-        });
+              : 'inline';
+
+          buttons[buttons.length - 1].push({
+            text: day,
+            callback_data: callbackData,
+          });
+        } else {
+          buttons[buttons.length - 1].push({
+            text: ' ',
+            callback_data: 'inline',
+          });
+        }
       });
     });
 

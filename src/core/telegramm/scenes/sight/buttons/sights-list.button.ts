@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf';
-import { SightActionEnum } from '../enums/sight-action.enum';
+import { SightActionEnum } from '../enums';
 
 export function continueSightButtons() {
   return Markup.inlineKeyboard([

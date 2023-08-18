@@ -1,6 +1,5 @@
 import { Markup } from 'telegraf';
-import { SIGHT_TYPE } from '../enums/sight-type.constants';
-import { SightActionEnum } from '../enums/sight-action.enum';
+import { SIGHT_TYPE, SightActionEnum } from '../enums';
 
 export function sightTypeButtons() {
   const buttons = [];

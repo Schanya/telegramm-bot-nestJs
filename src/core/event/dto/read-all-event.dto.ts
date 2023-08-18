@@ -1,4 +1,4 @@
-import { EventType } from '../types/event.type';
+import { EventType } from '../types';
 
 export class ReadAllEventDto {
   time?: Date;

@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/sequelize';
+
 import { City } from './city.model';
-import { CityOptions } from './dto/find-city.options';
-import { ReadAllCityDto } from './dto/read-all-city.dto';
-import { CreateCityDto } from './dto/create-city.dto';
+import { CityOptions, CreateCityDto, ReadAllCityDto } from './dto';
 
 @Injectable()
 export class CityService {

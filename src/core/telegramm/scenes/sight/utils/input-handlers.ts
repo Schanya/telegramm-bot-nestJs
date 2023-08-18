@@ -1,7 +1,8 @@
-import { Context } from '../../../interfaces/context.interface';
+import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
+
+import { Context } from '@telegramm/interfaces';
 import { SightRequestParams } from '../dto';
 import { SightContextStepEnum, SightPhrases } from '../enums';
-import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
 import { getCityGeoData, getSights } from './http-requests';
 
 export async function handleCityInput(ctx: Context) {

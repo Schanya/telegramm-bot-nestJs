@@ -1,15 +1,17 @@
-import { Context } from 'src/core/telegramm/interfaces/context.interface';
+import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
+
+import { Context } from '@telegramm/interfaces';
+import { actionButtons } from '@telegramm/buttons';
+import { SubscriptionExeption } from '@telegramm/errors';
+import { SceneEnum, railwayServiceTimeZoneOffset } from '@telegramm/enums';
+import { dateToTimeDto, formatTime } from '@telegramm/scenes/utils';
+
 import { getWeather } from './http-request';
 import { WeatherPhrases } from '../enums';
-import { actionButtons } from 'src/core/telegramm/buttons/actions.button';
-import { Message as MessageType } from 'telegraf/typings/core/types/typegram';
-import { CreateWeatherNotificationParams } from '../dto';
-import { SubscriptionExeption } from 'src/core/telegramm/errors';
-import { dateToTimeDto, formatTime } from '../../utils';
-import { Event } from 'src/core/event/event.model';
-import { SceneEnum } from 'src/core/telegramm/enums/scene.enum';
-import { City } from 'src/core/city/city.model';
-import { railwayServiceTimeZoneOffset } from 'src/core/telegramm/enums/time-zone';
+import { NotificationParamsDto } from '../dto';
+
+import { Event } from '@event/event.model';
+import { City } from '@city/city.model';
 
 export async function handleGetWeatherInput(
   ctx: Context,
@@ -32,7 +34,7 @@ export async function handleGetWeatherInput(
 export async function handleSubscriptionInput(
   ctx: Context,
   message: MessageType.TextMessage,
-  weather: CreateWeatherNotificationParams,
+  weather: NotificationParamsDto,
   event: Event,
   userCity: City,
 ) {

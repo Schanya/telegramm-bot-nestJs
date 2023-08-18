@@ -1,6 +1,10 @@
-import { Task } from 'src/core/task/task.model';
-import { dateToTimeDto, formatDateToString, formatTime } from '../../utils';
-import { railwayServiceTimeZoneOffset } from 'src/core/telegramm/enums/time-zone';
+import { Task } from '@task/task.model';
+import { railwayServiceTimeZoneOffset } from '@telegramm/enums';
+import {
+  dateToTimeDto,
+  formatDateToString,
+  formatTime,
+} from '@telegramm/scenes/utils';
 
 export function formatTasks(tasks: Task[]): string[] {
   const currentDate = new Date();
